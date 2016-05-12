@@ -1,0 +1,52 @@
+#
+# Makefile for TRIPS (Plow configuration)
+#
+
+LIBS = \
+	KQML \
+	TripsModule \
+	trlib \
+	util
+
+LISP_MODULES = \
+	util \
+	Comm \
+	Logging \
+	OntologyManager \
+	LexiconManager \
+	Parser \
+	SimpleKB \
+	IM \
+	LFEvaluator \
+	ChannelKB
+
+# doesn't compile for lack of parser::read-expression function
+#	DiscourseContext
+
+LISP_PROGRAMS = \
+	Systems/STEP
+
+SPEECH_LIBS = \
+
+SPEECH_PROGRAMS = \
+
+JAVA_PROGRAMS = \
+	Facilitator \
+	RDFMatcher
+
+OTHER_PROGRAMS = \
+	TextPP \
+	TextTagger \
+	Graphviz \
+	Diesel \
+	SkeletonScore \
+	Tools
+
+include Makefile-common
+
+#
+# Local variables:
+# mode: makefile
+# End:
+#
+

@@ -1,0 +1,230 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# src/Systems/STEP/Vagrantfile
+#   - a way to easily, reliably, inefficiently set up the TRIPS STEP system
+# William de Beaumont
+# 2016-03-24
+#
+# USAGE:
+#
+# Get Vagrant from http://www.vagrantup.com/ or your OS' package manager, and
+# make sure it can use VirtualBox. This may involve toggling a BIOS setting to
+# enable hardware support for virtualization.
+#
+# Then, in this directory, run:
+#
+#   vagrant up
+#
+# This will create a virtual machine with a Gentoo Linux guest, run it, and
+# then make it run the provisioning scripts below in order to install TRIPS
+# STEP and its dependencies. This may take several hours, depending on how fast
+# your computer and Internet connection are, as it involves a lot of
+# downloading and compiling.
+#
+# The host's $TRIPS_BASE=../../../ directory will be shared with the guest as
+# /vagrant/.
+#
+# When the initial "vagrant up" finishes, run:
+#
+#   vagrant ssh
+#
+# to log into the guest. To run STEP with access to the Lisp REPL, run the
+# above command in two separate terminal windows. In the first, do this to run
+# the non-lisp components:
+#
+#   cd /vagrant/logs/
+#   ../bin/trips-step -display none -nolisp
+#
+# In the second, do this to run the Lisp components and the REPL:
+#
+#   cd /vagrant/src/Systems/STEP/
+#   sbcl --load test --eval '(run)'
+#
+# In the REPL, you can run one of the test paragraphs (for example step3)
+# through the system like this:
+# 
+#   (test-paragraph 'step3)
+#
+# Logs and LF graphs in Graphviz dot format will be written to a subdirectory
+# of $TRIPS_BASE/logs/ (or wherever you ran trips-step from), named with the
+# time and date, e.g.
+#
+#   $TRIPS_BASE/logs/20160322T1630/
+#
+# To quit TRIPS, enter "(quit)" in the REPL and type Ctrl-C in the terminal
+# running the non-Lisp components. (If you switched to a different Lisp
+# package, you might need to do "(sb-ext:quit)" instead of just "(quit)".)
+#
+# To shut down the VM, run:
+#
+#   vagrant halt
+#
+# To start it again, run:
+# 
+#   vagrant up
+#
+# Don't worry, this only creates and provisions the VM the first time;
+# thereafter it just starts the VM. If you want to remake everything from
+# scratch, run:
+# 
+#   vagrant destroy
+#   vagrant up
+#
+# If the initial "vagrant up" fails, you don't always have to start from
+# scratch. You can redo specific provisioning stages using:
+#
+#   vagrant provision --provision-with stage-name-1,stage-name-2,...
+#
+# These are the stage names in order:
+#   
+#   gentoo-config
+#   gentoo-update (commented out)
+#   packaged-deps
+#   usr-local-share
+#   unpackaged-deps
+#   trips
+#
+# Even if you don't want to use Vagrant, reading the provisioning scripts in
+# this file may help you to set up TRIPS STEP correctly, by showing you which
+# dependencies you need and where to put them.
+
+Vagrant.configure(2) do |config|
+  # Start with minimal Gentoo Linux.
+  config.vm.box = "cmiles/gentoo-amd64-minimal"
+  # Run on VirtualBox with more than the default 1 GB of memory.
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2560" # 2.5 GB (a guess)
+  end
+  # Move the synced folder up to $TRIPS_BASE.
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "../../..", "/vagrant"
+
+  # Install all the things!
+  config.vm.provision "gentoo-config", type: "shell", privileged: true,
+      inline: <<-GENTOO_CONFIG
+    # Set shell options: exit on Error, Unset variables are errors, and show
+    # the eXpanded form of each command as it is executed.
+    set -eux
+    # Set flags on certain packages before installing them (mostly to eliminate
+    # dependencies we don't actually need).
+    cat >/etc/portage/package.use/trips <<-USE
+		dev-java/icedtea-bin -alsa -cjk -cups -gtk -webstart
+		media-gfx/graphviz svg -cairo
+		media-libs/gd truetype jpeg png fontconfig
+		USE
+    # Make it so we can use Java 1.8 (which SkeletonScore needs) and SBCL 1.3
+    # (which Parser needs), as opposed to the current default versions 1.7 and
+    # 1.1.
+    # We don't use Oracle Java because it's "fetch restricted", meaning the
+    # user must manually download the package from the website before Gentoo
+    # will install it, for legal reasons.
+    # Note that icedtea version 3 is actually Java version 1.8, and is newer
+    # than icedtea 7, which is Java 1.7.
+    cat >/etc/portage/package.accept_keywords/trips <<-KEYWORDS
+		=dev-java/icedtea-bin-3* ~amd64
+		=dev-lisp/sbcl-1.3* ~amd64
+		=dev-lisp/asdf-3.1* ~amd64
+		=dev-lisp/uiop-3.1* ~amd64
+		KEYWORDS
+  GENTOO_CONFIG
+
+#  config.vm.provision "gentoo-update", type: "shell", privileged: true,
+#      inline: <<-GENTOO_UPDATE
+#    set -eux
+#    # The two update commands below aren't strictly necessary, but it's nice to
+#    # keep things up to date.
+#    # Update Gentoo's package list.
+#    emerge-webrsync
+#    # Update already-installed packages.
+#    emerge -uD world
+#    # FIXME occasionally an update like this will require configuration files
+#    # to be updated interactively (perhaps using dispatch-conf). As it stands
+#    # we just leave the old configuration files in place.
+#  GENTOO_UPDATE
+
+  config.vm.provision "packaged-deps", type: "shell", privileged: true,
+      inline: <<-PACKAGED_DEPS
+    set -eux
+    # Install packages needed by TRIPS STEP (these few will pull in ~100
+    # dependencies, so it could take a while).
+    # Note that ":8" selects the version of icedtea-bin that is in slot 8,
+    # which corresponds to Java 1.8, and icedtea 3. Slots are Gentoo's way of
+    # being able to install multiple versions of the same package with
+    # different APIs simultaneously. But here we're using it to get around the
+    # fact that Gentoo is confused because 3 > 7 in crazy Java land.
+    emerge \
+	    dev-vcs/cvs \
+	    dev-lisp/sbcl \
+	    dev-java/icedtea-bin:8 \
+	    dev-lang/ruby \
+	    dev-perl/DBD-SQLite \
+	    media-gfx/graphviz \
+	    dev-lang/scala-bin
+  PACKAGED_DEPS
+
+  config.vm.provision "usr-local-share", type: "shell", privileged: true,
+      inline: <<-USR_LOCAL_SHARE
+    set -eux
+    # Set up a place for non-Gentoo-packaged dependencies.
+    mkdir -p /usr/local/share
+    # Make it writable by non-root users.
+    chmod a+w /usr/local/share
+  USR_LOCAL_SHARE
+
+  # -------- Drop privilege. --------
+
+  config.vm.provision "unpackaged-deps", type: "shell", privileged: false,
+      inline: <<-UNPACKAGED_DEPS
+    set -eux
+    # Go there and fetch the dependencies from the web, unpacking as needed.
+    cd /usr/local/share
+    # similarity flooding library
+    wget "http://www-diglib.stanford.edu/~melnik/mm/sfa/sfa-2003-11-17.jar"
+    # Make subdirectories for the rest of the dependencies, because that's what
+    # configure expects.
+    mkdir wordnet geonames stanford-{ner,parser,postagger}
+    # WordNet 3.0, with glosstags
+    # Note that we could get WordNet from Gentoo, but it doesn't include
+    # glosstags, and isn't in a location that configure expects.
+    cd wordnet
+    wget "http://wordnetcode.princeton.edu/3.0/WordNet-3.0.tar.bz2"
+    wget "http://wordnetcode.princeton.edu/glosstag-files/WordNet-3.0-glosstag.tar.bz2"
+    tar -jxf WordNet-3.0.tar.bz2
+    tar -jxf WordNet-3.0-glosstag.tar.bz2
+    # US geographic names database
+    cd ../geonames
+    mkdir 2016-02-01
+    wget "http://geonames.usgs.gov/docs/stategaz/NationalFile_20160201.zip" \
+      -O 2016-02-01/NationalFile.zip
+    # Note: no need to unpack NationalFile.zip.
+    # Stanford Named Entity Recognizer
+    cd ../stanford-ner
+    wget "http://nlp.stanford.edu/software/stanford-ner-2007-11-05.tar.gz"
+    tar -zxf stanford-ner-2007-11-05.tar.gz
+    # Stanford Parser
+    cd ../stanford-parser
+    wget "http://nlp.stanford.edu/software/stanford-parser-2007-08-19.tar.gz"
+    tar -zxf stanford-parser-2007-08-19.tar.gz
+    # Stanford Part Of Speech Tagger
+    cd ../stanford-postagger
+    wget "http://nlp.stanford.edu/software/stanford-postagger-2008-06-06.tar.gz"
+    tar -zxf stanford-postagger-2008-06-06.tar.gz
+  UNPACKAGED_DEPS
+
+  config.vm.provision "trips", type: "shell", privileged: false,
+      inline: <<-TRIPS
+    set -eux
+    # Go to $TRIPS_BASE/src and install TRIPS
+    cd /vagrant/src
+    ./configure --with-lisp=sbcl
+    make clean
+    # Make extra sure we don't have old compiled lisp files from a previous
+    # install (some aren't removed with "make clean").
+    find . -name '*.fasl' -delete
+    make
+    make install
+    # Make a directory for running TRIPS from and keeping the logs.
+    mkdir -p /vagrant/logs
+  TRIPS
+end

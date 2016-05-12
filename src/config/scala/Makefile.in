@@ -1,0 +1,13 @@
+#
+# Makefile for scala
+#
+# William de Beaumont, wbeaumont@ihmc.us, 2015-04-01
+# $Id: Makefile.in,v 1.1 2015/04/02 19:57:54 wdebeaum Exp $
+#
+# @configure_input@
+#
+
+include ../auto/rules.mk
+
+distclean::
+	rm -f defs.mk

@@ -1,0 +1,10 @@
+# -*- mode: Makefile;-*-
+#
+# File: src/config/RDFMatcher/defs.mk.in
+# Creator: William de Beaumont
+# Created: 2009-01-09
+#
+# @configure_input@
+#
+
+RDFMATCHER_sfa_jar = @RDFMATCHER_sfa_jar@

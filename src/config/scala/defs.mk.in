@@ -1,0 +1,16 @@
+# -*- mode: Makefile;-*-
+#
+# defs.mk for scala
+#
+# William de Beaumont, wbeaumont@ihmc.us, 2015-04-01
+# $Id: defs.mk.in,v 1.1 2015/04/02 19:57:55 wdebeaum Exp $
+#
+# @configure_input@
+#
+
+include $(CONFIGDIR)/java/defs.mk
+
+SCALA   = @SCALA@
+SCALAC   = @SCALAC@
+SCALADOC = @SCALADOC@
+
