@@ -17,7 +17,7 @@ INPUT_FILE=ENV['TRIPS_BASE'] + '/etc/Data/OB_data'
 NUM_TRIPSES=4
 BATCH_SIZE=100 # stories
 PORT_BASE=6230
-STORY_TIMEOUT=300 # seconds
+STORY_TIMEOUT=900 # seconds (15 minutes)
 
 $: << ENV['TRIPS_BASE'] + '/etc'
 
@@ -48,6 +48,7 @@ class StepParseFiles
     @name = "STEPPARSEFILES"
     init()
     @stories = stories
+    @last_story_id = nil
     # wait for TT to be ready before we start sending load-file messages
     add_handler(KQML.from_s('(tell &key :content (module-status . *) :sender TEXTTAGGER)'), method(:do_batch))
   end
@@ -64,17 +65,19 @@ class StepParseFiles
     end
     Process.wait(@trips_pid)
     $stderr.puts "#{@logdir} finished"
+    sleep 2 # wait a little more for the port to become available
   end
 
   def do_batch(msg)
     @stories.each { |id, text|
+      @last_story_id = id
       output_file = "#{@logdir}/#{id}.xml"
       $stderr.puts "starting #{id}..."
       times = Benchmark.measure {
 	reply =
 	  timeout(STORY_TIMEOUT) {
 	    send_and_wait(KQML[:request, :receiver => :webparser, :content =>
-	      KQML[:http, :post, "step", :query => KQML[:input => text]]
+	      KQML[:http, :post, "step", :query => KQML[:input => text, :"semantic-skeleton-scoring" => "on"]]
 	    ])
 	  }
 	raise "expected :content-type \"text/xml...\"" unless (reply[:"content-type"] =~ /^text\/xml/)
@@ -83,8 +86,9 @@ class StepParseFiles
       }
       $stderr.puts "processing #{id} took #{times.real} seconds"
     }
+    @last_story_id = nil
   rescue => e
-    $stderr.puts e.message, *e.backtrace
+    $stderr.puts "while processing #{@last_story_id}: " + e.message, *e.backtrace
   ensure
     die
   end
