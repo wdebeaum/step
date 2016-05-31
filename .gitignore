@@ -110,6 +110,12 @@ trips-*.core
 /src/SRIWrapper/SRIWrapper
 /src/KeyboardManager/KeyboardManager
 /src/DeepSemLex/data/*/
+/src/Diesel/diesel.jar
+/src/Diesel/xml
+/src/Diesel/xml.zip
+/src/SkeletonScore/SkeletonScore
+/src/RDFMatcher/RDFMatcher
+/src/WordNetWeb/add_suffix.ph
 # system run scripts
 /src/Systems/bob/trips-bob
 /src/Systems/cabot/trips-cabot
