@@ -194,9 +194,9 @@ Vagrant.configure(2) do |config|
     tar -jxf WordNet-3.0-glosstag.tar.bz2
     # US geographic names database
     cd ../geonames
-    mkdir 2016-02-01
-    wget "http://geonames.usgs.gov/docs/stategaz/NationalFile_20160201.zip" \
-      -O 2016-02-01/NationalFile.zip
+    mkdir 2016-06-01
+    wget "http://geonames.usgs.gov/docs/stategaz/NationalFile_20160601.zip" \
+      -O 2016-06-01/NationalFile.zip
     # Note: no need to unpack NationalFile.zip.
     # Stanford Named Entity Recognizer
     cd ../stanford-ner
