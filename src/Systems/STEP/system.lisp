@@ -14,10 +14,10 @@
 (load #!TRIPS"src;Systems;core;system")
 
 (trips:def-trips-system :step
-    (:dfc-component :parser            #!TRIPS"src;Parser;")
-  (:dfc-component       :im                #!TRIPS"src;NewIM;")
- 
-)
+  (:old-trips-component	:lxm	#!TRIPS"src;LexiconManager;")
+  (:dfc-component	:parser	#!TRIPS"src;Parser;")
+  (:dfc-component	:im	#!TRIPS"src;NewIM;")
+  )
 
 ;; add WebParser to the system when we have its source directory
 (when (probe-file #!TRIPS"src;WebParser")
