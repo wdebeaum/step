@@ -2,7 +2,7 @@
 ;;;; File: Systems/STEP/system.lisp
 ;;;; Creator: George Ferguson
 ;;;; Created: Wed Jul 11 12:51:11 2007
-;;;; Time-stamp: <Fri Apr  1 08:04:43 EDT 2016 jallen>
+;;;; Time-stamp: <Thu Sep  1 15:23:44 EDT 2016 jallen>
 ;;;;
 ;;;; Defines and loads an instance of the TRIPS system.
 ;;;;
@@ -54,6 +54,7 @@
 	(parser::*no-positions-in-lf* nil)       ;; generate start and end positions
 	((parser::setmaxnumberentries 5000))    ;;  # constituents built before stopping
         ((parser::setmaxchartsize 5000))        ;;  max #  characters in any input
+	((setf (parser::number-parses-to-find parser::*chart*) 10))
 	((setf (parser::flexible-semantic-matching parser::*chart*) t))  ;;  selection preferences rather than restrictions
 	((setf (parser::number-parses-desired parser::*chart*) 4))  ;; get # interpretations before stopping
 	(parser::*include-parse-tree-in-messages* '(w::lex)) ;; required for WebParser
