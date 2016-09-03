@@ -42,7 +42,8 @@
 (setq parser::*parser-init-settings*
       '((parser::*in-system* :step)
 	(parser::*word-length* 7)      ;; guess and average number of letters in a word
-	(parser::*score-length-multiplier* 1)   ;;  boost factor for constituent size
+;	(parser::*score-length-multiplier* 1)   ;;  boost factor for constituent size
+	(parser::*score-length-multiplier* 0.4)   ;;  boost factor for constituent size
 	(parser::*score-corner-multiplier* 0)    ;; not clear this is helpful
 	(parser::*use-tags-as-filter* t)        ;;  indicate we should use POS information
 	(parser::*bad-tag-multiplier* .98)       ;;  penalty multiplier for lex entries that do not match POS tags
@@ -59,9 +60,9 @@
 	((setf (parser::number-parses-desired parser::*chart*) 4))  ;; get # interpretations before stopping
 	(parser::*include-parse-tree-in-messages* '(w::lex)) ;; required for WebParser
 	(parser::*semantic-skeleton-scoring-enabled* t) ; enable semantic scoring
-	((parser::customize-cost-table '((ont::SA_QUERY 1.2) (ont::IDENTIFY 2) (ont::SA_pred-fragment 2) 
+	((parser::customize-cost-table '((ont::SA_QUERY 1.2) (ont::SA_IDENTIFY 2) (ont::SA_pred-fragment 2) 
 					 (ont::SA_request 1.2) (ont::SA_YN-QUESTION 1.2)
-					 (ont::SA_CONFIRM 1.3) (ont::SA_WH-QUESTION 1.2) (ont::TELL 1)(w::CP 2) (w::VP 2) 
+					 (ont::SA_CONFIRM 1.3) (ont::SA_WH-QUESTION 1.2) (ont::SA_TELL 1)(w::CP 2) (w::VP 2) 
 					 (w::punc .5))))
 	))
 

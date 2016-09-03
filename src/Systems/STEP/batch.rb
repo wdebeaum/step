@@ -13,7 +13,7 @@
 
 raise "TRIPS_BASE environment variable unset" unless (ENV.key?('TRIPS_BASE'))
 
-INPUT_FILE=ENV['TRIPS_BASE'] + '/etc/Data/OB_data'
+INPUT_FILE=ENV['TRIPS_BASE'] + '/etc/Data/ROCStories__spring2016.tsv'
 NUM_TRIPSES=4
 BATCH_SIZE=100 # stories
 PORT_BASE=6230
@@ -50,22 +50,27 @@ class StepParseFiles
     @stories = stories
     @last_story_id = nil
     # wait for TT to be ready before we start sending load-file messages
-    add_handler(KQML.from_s('(tell &key :content (module-status . *) :sender TEXTTAGGER)'), method(:do_batch))
+    #add_handler(KQML.from_s('(tell &key :content (module-status . *) :sender TEXTTAGGER)'), method(:do_batch))
+    # wait for SkeletonScore...
+    add_handler(KQML.from_s('(tell &key :content (module-status . *) :sender SKELETONSCORE)'), method(:do_batch))
   end
 
   def alive? ; @alive ; end
 
   def die
-    @alive = false
     # tell TRIPS to exit, and wait for it to do so
     begin
       send_msg(KQML.from_s('(request :receiver facilitator :content (exit))'))
+      @socket.shutdown # make it easier for Facilitator to shut down?
     rescue => e
       $stderr.puts "failed to send exit message to facilitator (#{@logdir}): #{e.message}"
     end
     Process.wait(@trips_pid)
     $stderr.puts "#{@logdir} finished"
-    sleep 2 # wait a little more for the port to become available
+    begin
+      sleep 2 # wait a little more for the port to become available
+    end while (system("lsof -i4TCP@127.0.0.1:#{@port} |grep java"))
+    @alive = false
   end
 
   def do_batch(msg)
@@ -102,12 +107,27 @@ port2module = Array.new(NUM_TRIPSES)
 
 stories = nil
 if (File.directory?(INPUT_FILE)) # Omid's directory full of text files
-  stories = Dir[INPUT_FILE + '/*'].collect { |filename|
-    [File.basename(filename), File.open(filename, 'r').read]
-  }
+  if (INPUT_FILE =~ /files_to_parse\/?$/) # one sentence per line
+    stories = []
+    Dir[INPUT_FILE + '/*'].each { |filename|
+      basename = File.basename(filename)
+      File.open(filename, 'r').each_line.with_index { |line, i|
+        stories << [((basename + '-%06d') % [i]), line]
+      }
+    }
+  else # one story per file
+    stories = Dir[INPUT_FILE + '/*'].collect { |filename|
+      [File.basename(filename), File.open(filename, 'r').read]
+    }
+  end
 else # Nasrin's single TSV file
   stories = File.open(INPUT_FILE, 'r').each_line.drop(1).collect { |line|
-    story_id, worker_id, story_title, *sentences = line.chomp.split(/\t/)
+    # 2015-12
+    #story_id, worker_id, story_title, *sentences = line.chomp.split(/\t/)
+    # 2016-09 ROCStories
+    story_id, story_title, *sentences = line.chomp.split(/\t/)
+    # 2016-09 cloze
+    # story_id, story_title, *sentences, answer_right_ending = line.chomp.split(/\t/)
     story_id =~ /^[\w-]+$/ or raise "bogus story id: #{story_id}"
     [story_id, sentences.join(' ')]
   }
@@ -150,4 +170,7 @@ NUM_BATCHES.times { |batch_num|
 # wait for remaining threads
 tw.all_waits
 
-system("cd .. && find OB_data_output -name '*.xml' |grep -v '/old' |tar -jcvf OB_data_output.tar.bz2 -T - && cp OB_data_output.tar.bz2 /Library/WebServer/Documents/step-logs/")
+# pack up the resulting .xml files in a .tar.bz2 file named like this dir, and
+# put it up on the web
+pwd_name = File.basename(Dir.pwd)
+system("cd .. && find #{pwd_name} -name '*.xml' |grep -v '/old' |tar -jcvf #{pwd_name}.tar.bz2 -T - && cp #{pwd_name}.tar.bz2 /Library/WebServer/Documents/step-logs/")
