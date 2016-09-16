@@ -1,19 +1,24 @@
 #!/usr/bin/ruby
 
 # batch.rb - process a big batch of short (paragraph-length) stories in parallel
-# 2016-01-04
+# 2016-09-15
 # William de Beaumont
 #
 # USAGE: set TRIPS_BASE to a reasonable value, and run this program from a
 # directory where you want the batch??/ logdirs to show up:
 #   caffeinate -s script batch.log $TRIPS_BASE/src/Systems/STEP/batch.rb
-# some parameters are defined as constants below:
+# some parameters are defined as constants below.
+#
+# NOTE: besides the usual STEP checkout, you also need to get these directories
+# before you configure and build STEP for use with this program:
+#   src/WebParser/
+#   src/config/ruby/
 #
 # See also ../drum/batch.rb, which this is based on.
 
 raise "TRIPS_BASE environment variable unset" unless (ENV.key?('TRIPS_BASE'))
 
-INPUT_FILE=ENV['TRIPS_BASE'] + '/etc/Data/ROCStories__spring2016.tsv'
+INPUT_FILE=ENV['TRIPS_BASE'] + '/etc/Data/OB-question-files-remainder-2.tsv'
 NUM_TRIPSES=4
 BATCH_SIZE=100 # stories
 PORT_BASE=6230
@@ -128,7 +133,7 @@ else # Nasrin's single TSV file
     story_id, story_title, *sentences = line.chomp.split(/\t/)
     # 2016-09 cloze
     # story_id, story_title, *sentences, answer_right_ending = line.chomp.split(/\t/)
-    story_id =~ /^[\w-]+$/ or raise "bogus story id: #{story_id}"
+    story_id =~ /^[\w\.-]+$/ or raise "bogus story id: #{story_id}"
     [story_id, sentences.join(' ')]
   }
 end
