@@ -1,0 +1,12 @@
+#
+# Makefile for python
+#
+# $Id: Makefile.in,v 1.1 2015/11/13 00:00:35 wdebeaum Exp $
+#
+# @configure_input@
+#
+
+include ../auto/rules.mk
+
+distclean::
+	rm -f defs.mk

@@ -1,0 +1,10 @@
+# -*- mode: Makefile;-*-
+#
+# defs.mk for python
+#
+# $Id: defs.mk.in,v 1.1 2015/11/13 00:00:35 wdebeaum Exp $
+#
+# @configure_input@
+#
+
+PYTHON  = @PYTHON@
