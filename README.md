@@ -8,6 +8,8 @@ STEP can be installed easily but inefficiently using [Vagrant](https://www.vagra
 
 Note that the `src/config/lisp/defsystem/defsystem-3.6i/` directory contains a modified, non-standard, non-official version of [MK:DEFSYSTEM](http://www.cliki.net/mk-defsystem) 3.6i. See the comments near the top of `defsystem.lisp` in that directory for its copyright notice and license.
 
+Also note that the `src/bioagents_trips/` directory is from [HMS' bioagents repo](https://github.com/sorgerlab/bioagents) \(specifically (bioagents/trips/)[https://github.com/sorgerlab/bioagents/tree/master/bioagents/trips]\) and is copyright (c) 2015, Bioagents Developers, under a BSD 2-clause license; see `src/bioagents_trips/LICENSE`.
+
 The rest of the repository is licensed using the [GPL 2+](http://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) (see `gpl-2.0.txt`):
 
 TRIPS STEP system  
