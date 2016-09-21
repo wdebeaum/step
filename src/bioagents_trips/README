@@ -1,0 +1,24 @@
+The Python code in this directory is from HMS' bioagents repo here:
+
+https://github.com/sorgerlab/bioagents
+
+in the bioagents/trips/ subdirectory.
+
+It is copyright (c) 2015, Bioagents Developers, under a BSD 2-clause license;
+see the file LICENSE in this directory.
+
+
+It's more or less a direct translation of the Java StandardTripsModule and KQML
+libraries to Python. However a few minor differences make it not a drop-in
+replacement for using the Java libraries from Jython:
+
+ * Module and method names are in snake_case instead of camelCase (class names
+   are still in CamelCase).
+ * The class you want to extend is TripsModule, not StandardTripsModule; there
+   is no StandardTripsModule.
+ * There's no run() method; init() is called from __init__(), and there's a
+   start() method that starts the dispatcher. So call start() instead of run().
+ * There's no get(i) method in KQMLList; use list[i] instead of list.get(i).
+ * KQMLReader seeks backwards to implement unget_char, which fails when running
+   a module alone from the console with -connect no (you can't seek stdin).
+ * You *can* set self.name, it's not protected by Java.

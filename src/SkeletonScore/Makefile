@@ -9,4 +9,4 @@ CONFIGDIR=../config
 include $(CONFIGDIR)/python/prog.mk
 
 all::
-	pip install git+git://github.com/mrmechko/diesel-python.git@master
+	$(PIP) install --user git+git://github.com/mrmechko/diesel-python.git@master

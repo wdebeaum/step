@@ -6,7 +6,8 @@ LIBS = \
 	KQML \
 	TripsModule \
 	trlib \
-	util
+	util \
+	bioagents_trips
 
 LISP_MODULES = \
 	util \

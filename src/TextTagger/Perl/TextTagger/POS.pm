@@ -29,6 +29,9 @@ sub ready_pos_tagger
   return 1;
 }
 
+# apostrophes can be either ASCII apostrophes, or Unicode right single quotes
+my $apos = qr/['\x{2019}]/;
+
 sub stanford_pos
 {
   my $english_utt = shift;
@@ -36,13 +39,13 @@ sub stanford_pos
   # normalize spacing of tokens
 
   # special case for ' not surrounded by letters
-  $english_utt =~ s/(?<![[:alnum:]])'|'(?![[:alnum:]])/ ' /g;
+  $english_utt =~ s/(?<![[:alnum:]])($apos)|($apos)(?![[:alnum:]])/ $1$2 /g;
   # special case for n't
-  $english_utt =~ s/n't/ n't /g;
+  $english_utt =~ s/n($apos)t/ n$1t /g;
   # surround words with space
-  $english_utt =~ s/(?:(\S)('))?([[:alnum:]]+(?!'))/($& eq "n't")? $& : "$1 $2$3"/ge;
+  $english_utt =~ s/(?:(\S)($apos))?([[:alnum:]]+(?!$apos))/($& eq "n't" or $& eq "n\x{2019}t")? $& : "$1 $2$3"/ge;
   # surround punctuation characters (except ') with space
-  $english_utt =~ s/[^'[:alnum:]\s]/ $& /g;
+  $english_utt =~ s/[^'\x{2019}[:alnum:]\s]/ $& /g;
 
   $english_utt =~ s/^\s+//; # trim leading space
   $english_utt =~ s/\s+$//; # trim trailing space

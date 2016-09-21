@@ -1,11 +1,12 @@
-#!/usr/bin/jython3.5
+#!/usr/bin/python2.7
 
-# This is pretty much a direct translation of Hello.java into Jython.
+# This is pretty much a direct translation of Hello.java into Python.
 
 import os
 
-from TRIPS.TripsModule import StandardTripsModule
-from TRIPS.KQML import KQMLPerformative, KQMLList
+from bioagents_trips.trips_module import TripsModule
+from bioagents_trips.kqml_performative import KQMLPerformative
+from bioagents_trips.kqml_list import KQMLList
 
 import diesel.ontology as ontology
 import diesel.library as library
@@ -16,75 +17,73 @@ TRIPS_BASE = os.environ['TRIPS_BASE']
 ONTOLOGY_PATH = os.path.join(TRIPS_BASE, "etc/XMLTrips/lexicon/data")
 GOLD_DATA = os.path.join(TRIPS_BASE, "etc/Data/gold.predmap")
 
-class SkeletonScore(StandardTripsModule):
+class SkeletonScore(TripsModule):
     """ Hello TRIPS module - replies to hello requests with hello tells.
     Sending this: (request :content (hello) :sender fred)
     Gets this reply: (tell :content (hello fred) :receiver fred)
     """
     def __init__(self, argv):
-        StandardTripsModule.__init__(self, ["-name", TRIPS_NAME] + argv)
+        TripsModule.__init__(self, argv)
 
     def init(self):
-        # this doesn't work because name is protected; instead use -name in
-        # __init__ as above:
-        # self.name = "hello"
-        StandardTripsModule.init(self)
+        self.name = TRIPS_NAME
+        TripsModule.init(self)
         self.ontology = ontology.load_ontology(ONTOLOGY_PATH)
         self.gold = library.load_predmap(GOLD_DATA, self.ontology)
         self.PRED_TYPE = score.PathDistPredicate
-        self.send(KQMLPerformative.fromString(
+        self.send(KQMLPerformative.from_string(
             "(subscribe :content (request &key :content ("+TRIPS_NAME+" . *)))"))
-        self.send(KQMLPerformative.fromString(
+        self.send(KQMLPerformative.from_string(
             "(subscribe :content (request &key :content (adjustment-factor . *)))"))
-        self.send(KQMLPerformative.fromString(
+        self.send(KQMLPerformative.from_string(
             "(subscribe :content (request &key :content (score-method . *)))"))
-        self.send(KQMLPerformative.fromString(
+        self.send(KQMLPerformative.from_string(
             "(subscribe :content (request &key :content (evaluate-skeleton . *)))"))
         self.ready()
         
 
-    def receiveRequest(self, msg, content):
+    def receive_request(self, msg, content):
         print("requesting content")
         error = False
         if not isinstance(content, KQMLList):
-            self.errorReply(msg, "expected :content to be a list")
+            self.error_reply(msg, "expected :content to be a list")
             return
-        verb = content.get(0).toString().lower()
-        replyMsg = KQMLPerformative("tell")
-        replyContent = KQMLList()
+        verb = content[0].to_string().lower()
+        reply_msg = KQMLPerformative("tell")
+        reply_content = KQMLList()
         if verb == "hello":
-            replyContent.add("hello")
-            self.reply(msg, replyMsg)
+            reply_content.add("hello")
+            self.reply(msg, reply_msg)
         elif verb == "adjustment-factor": 
-            replyContent.add("ok")
-            adj_factor = content.get(1).toString().lower().encode('ascii', 'ignore')
+            reply_content.add("ok")
+            adj_factor = content[1].to_string().lower().encode('ascii', 'ignore')
             self.gold.adjustment_factor = adj_factor
         elif verb == "score-method": #Implement me
-            pred_index = int(content.get(1).toString())
+            pred_index = int(content[1].to_string())
             if pred_index < len(score.PREDICATES) and -1 < pred_index:
                 self.PRED_TYPE = score.PREDICATES[pred_index]
-                replyContent.add(self.PRED_TYPE.name())
+                reply_content.add(self.PRED_TYPE.name())
             else:
                 error = True
-                self.errorReply(msg, "index out of range")
+                self.error_reply(msg, "index out of range")
         elif verb == "evaluate-skeleton": 
-            predicate = content.get(1).toString().lower().encode('ascii', 'ignore')
+            predicate = content[1].to_string().lower().encode('ascii', 'ignore')
             result = self.gold.adjustment_factor(predicate, True, pred_type=self.PRED_TYPE)
             str_res = ":score ({}) :match ({})".format(result[1],str(result[0]))
             print(str_res)
-            replyContent.add(str_res)
+            reply_content.add(str_res)
         else:
             error = True
-            self.errorReply(msg, "unknown request verb " + verb)
+            self.error_reply(msg, "unknown request verb " + verb)
         if not error:
-            sender = msg.getParameter(":sender")
+            sender = msg.get_parameter(":sender")
             if sender is not None:
-                replyContent.add(sender)
-            replyMsg.setParameter(":content", replyContent)
-            self.reply(msg, replyMsg)
+                reply_content.add(sender)
+            reply_msg.set_parameter(":content", reply_content)
+            self.reply(msg, reply_msg)
  
 
 if __name__ == "__main__":
     import sys
-    SkeletonScore(sys.argv[1:]).run()
+    SkeletonScore(sys.argv[1:]).start()
 
