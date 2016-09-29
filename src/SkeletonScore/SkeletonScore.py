@@ -16,6 +16,7 @@ TRIPS_NAME="SkeletonScore"
 TRIPS_BASE = os.environ['TRIPS_BASE']
 ONTOLOGY_PATH = os.path.join(TRIPS_BASE, "etc/XMLTrips/lexicon/data")
 GOLD_DATA = os.path.join(TRIPS_BASE, "etc/Data/gold.predmap")
+LIBRARY=library.DEFAULT_LIBRARY
 
 class SkeletonScore(TripsModule):
     """ Hello TRIPS module - replies to hello requests with hello tells.
@@ -29,8 +30,8 @@ class SkeletonScore(TripsModule):
         self.name = TRIPS_NAME
         TripsModule.init(self)
         self.ontology = ontology.load_ontology(ONTOLOGY_PATH)
-        self.gold = library.load_predmap(GOLD_DATA, self.ontology)
-        self.PRED_TYPE = score.PathDistPredicate
+        self.gold = library.load_predmap(GOLD_DATA, self.ontology, lib_type=LIBRARY)
+        self.PRED_TYPE = score.DEFAULT_PRED_TYPE
         self.send(KQMLPerformative.from_string(
             "(subscribe :content (request &key :content ("+TRIPS_NAME+" . *)))"))
         self.send(KQMLPerformative.from_string(
