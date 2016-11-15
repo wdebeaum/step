@@ -8,5 +8,12 @@ SUBDIRS=library
 CONFIGDIR=../config
 include $(CONFIGDIR)/python/prog.mk
 
-all::
-	$(PIP) install --user git+git://github.com/mrmechko/diesel-python.git@master
+.git:
+	git init .
+	git remote add origin https://github.com/mrmechko/SkeletonScore.git
+
+all:: .git
+	git pull origin master
+	cp predmap.txt $(etcdir)/Data/gold.predmap.complete
+	cp predmap.txt $(etcdir)/Data/gold.predmap
+	$(PIP) install --user -r requirements.txt

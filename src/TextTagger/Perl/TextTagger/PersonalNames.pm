@@ -24,7 +24,20 @@ my @blacklist = (
   # seasons
   # Fall isn't attested
   # Summer and Autumn have frequency >10,000 as names
-  qw(Spring Fall Winter)
+  qw(Spring Fall Winter),
+  # personal pronouns
+  # (These aren't names, but they get capitalized at the beginning of a
+  # sentence.)
+  # Again, I'm being thorough, using this table:
+  # https://en.wikipedia.org/wiki/English_personal_pronouns#Basic
+  qw(I Me My Mine Myself
+     You Your Yours Yourself
+     He Him His Himself
+     She Her Hers Herself
+     It Its Itself
+     They Them Their Theirs Themselves
+     We Us Our Ours Ourselves
+  )
 );
 
 my ($terms_in, $terms_out, $terms_pid);
