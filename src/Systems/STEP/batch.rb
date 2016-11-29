@@ -92,7 +92,7 @@ EOB
     opts.on('-dDIR', '--input-directory=DIR',
       #                                           #
       "A directory full of files to take input",
-      "from. You must you either this option or",
+      "from. You must use either this option or",
       " \b--input-file, but not both.") { |d|
       File.exists?(d) or raise "input file #{d.inspect} does not exist"
       File.directory?(d) or
