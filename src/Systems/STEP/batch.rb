@@ -157,13 +157,15 @@ EOB
       "The columns to take the text unit itself",
       "from (not valid with",
       " \b--input-file-format=txt). Column values",
-      "are joined with single spaces. This option",
-      "works the same as the 'cut' command's -f",
-      "option. That is, it's a comma-separated",
-      "list of one-based column numbers, or",
-      "hyphenated ranges thereof. Omitting one end",
-      "of a range means take everything on that",
-      "side. So:",
+      "are joined with single spaces, and a period",
+      "is added to each one that doesn't already",
+      "have sentence-final punctuation. This",
+      "option works the same as the 'cut'",
+      "command's -f option. That is, it's a comma-",
+      "separated list of one-based column numbers,",
+      "or hyphenated ranges thereof. Omitting one",
+      "end of a range means take everything on",
+      "that side. So:",
       "  N   means the Nth column only,",
       "  N-M means columns N through M inclusive,",
       "  N-  means the Nth column and everything",
@@ -215,6 +217,12 @@ EOB
       "      --drop-headings",
       "      --id-column=1",
       "      --text-columns=3-",
+      "  'rocstories2017' is the Winter 2017",
+      "    version, options are:",
+      "      --drop-headings",
+      "      --id-column=1",
+      "      --text-columns=3-",
+      "      --input-file-format=csv",
       "  'cloze' is Nasrin's Cloze Test data,",
       "    options are:",
       "      --drop-headings",
@@ -233,6 +241,8 @@ EOB
 	    %w{--drop-headings --id-column=1 --text-columns=4-}
 	  when 'rocstories2016'
 	    %w{--drop-headings --id-column=1 --text-columns=3-}
+	  when 'rocstories2017'
+	    %w{--drop-headings --id-column=1 --text-columns=3- --input-file-format=csv}
 	  when 'cloze'
 	    %w{--drop-headings --id-column=1 --text-columns=2-7}
 	  when 'obdata'; %w{--one-text-unit-per-file}
@@ -346,6 +356,16 @@ $stderr.puts "Options = #{Options.inspect}"
 # Input reading functions
 #
 
+module Enumerable
+  # join sentence strings with spaces, after adding a period to each sentence
+  # that doesn't already end with sentence-ending punctuation
+  def join_sentences
+    collect { |s|
+      s + ((s =~ /[\.\?\!]["']?$/) ? '' : '.')
+    }.join(' ')
+  end
+end
+
 # given the current Options, and the column values of one row, return a text
 # unit string, and add an ID to the ids list if appropriate
 def row_to_text_unit(cols, ids)
@@ -363,11 +383,11 @@ def row_to_text_unit(cols, ids)
       finite_range =
         (range.end == Infinity ? (range.begin..(cols.size-1)) : range)
       cols[finite_range]
-    }.join(' ')
+    }.join_sentences
   else
     # get all the non-ID columns as the text unit
     cols.delete_at(Options.id_column) if (Options.id_column)
-    cols.drop(1).join(' ')
+    cols.drop(1).join_sentences
   end
 end
 
@@ -400,7 +420,7 @@ def read_text_units_from_file(filename)
 	  (Options.drop_headings ?
 	    { headers: true, return_headers: false } : {})
 	text_units = CSV.new(f, csv_options).collect { |row|
-	  row_to_text_unit(row)
+	  row_to_text_unit((Options.drop_headings ? row.fields : row), ids)
 	}
       else # if it's not csv, don't do anything fancy, just split
 	lines = f.each_line
