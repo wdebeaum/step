@@ -14,6 +14,7 @@ include $(CONFIGDIR)/python/prog.mk
 
 all:: .git
 	git pull origin master
+	$(MKINSTALLDIRS) $(etcdir)/Data
 	cp predmap.txt $(etcdir)/Data/gold.predmap.complete
 	cp predmap.txt $(etcdir)/Data/gold.predmap
 	$(PIP) install --user -r requirements.txt

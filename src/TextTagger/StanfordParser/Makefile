@@ -19,6 +19,6 @@ $(error can\'t find Stanford Parser jar file)
 endif
 
 JFLAGS	= -cp $(PARSER_JAR)
-EXTRA_JAVA_FLAGS	= -Xmx500m -DTRIPS.TEXTTAGGER_parser=$(TEXTTAGGER_parser)
+EXTRA_JAVA_FLAGS	= -Xmx600m -DTRIPS.TEXTTAGGER_parser=$(TEXTTAGGER_parser)
 EXTRA_CLASSPATH	= $(PARSER_JAR)
 
