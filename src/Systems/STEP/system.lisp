@@ -2,7 +2,7 @@
 ;;;; File: Systems/STEP/system.lisp
 ;;;; Creator: George Ferguson
 ;;;; Created: Wed Jul 11 12:51:11 2007
-;;;; Time-stamp: <Thu Sep  1 15:23:44 EDT 2016 jallen>
+;;;; Time-stamp: <Mon Jan 23 09:54:09 EST 2017 jallen>
 ;;;;
 ;;;; Defines and loads an instance of the TRIPS system.
 ;;;;
@@ -81,3 +81,10 @@
   
 (defun parse-eval (x)
   (im::send-msg `(request :receiver parser :content (eval ,x))))
+
+
+(load  #!TRIPS"src;Systems;step;adjectives.lisp")
+(load  #!TRIPS"src;Systems;step;attributes.lisp")
+
+(setf wf::wordnet-synset-to-ont-type-mappings (make-hash-table :test #'equalp))
+(wf::make-synset-to-ont-type-table)
