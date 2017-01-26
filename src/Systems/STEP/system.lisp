@@ -83,8 +83,8 @@
   (im::send-msg `(request :receiver parser :content (eval ,x))))
 
 
-(load  #!TRIPS"src;Systems;step;adjectives.lisp")
-(load  #!TRIPS"src;Systems;step;attributes.lisp")
+(load  #!TRIPS"src;Systems;STEP;adjectives.lisp")
+(load  #!TRIPS"src;Systems;STEP;attributes.lisp")
 
 (setf wf::wordnet-synset-to-ont-type-mappings (make-hash-table :test #'equalp))
 (wf::make-synset-to-ont-type-table)
