@@ -38,6 +38,20 @@ sub stanford_ner
 {
   my $english_utt = shift;
   $english_utt =~ s/[[:space:]]/ /g;
+
+  # Incredibly, SNER checks whether the input string names a file, and if it
+  # does, *reads the file* instead of tagging the string we asked it to tag. If
+  # it's a directory (such as ".") it will read the first file in the
+  # directory. I can see no easy way to turn this behavior off. WTF!??!
+  #
+  # So instead of letting it do that, just fake an untagged response if the
+  # input string happens to name a file.
+  if (-e $english_utt) {
+    print STDERR "Warning: SNER input string '$english_utt' names a file; faking an untagged response instead of letting it read the file.\n";
+    $english_utt =~ s/(\b |$)/\/O/g;
+    return $english_utt;
+  }
+
   print $stanford_out $english_utt . "\n";
   my $stanford_utt = <$stanford_in>;
   chomp $stanford_utt;
