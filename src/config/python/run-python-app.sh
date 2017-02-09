@@ -2,7 +2,7 @@
 #
 # run-python-app.sh: Shell script wrapper for launching a Python app
 #
-# $Id: run-python-app.sh,v 1.1 2015/11/13 00:00:36 wdebeaum Exp $
+# $Id: run-python-app.sh,v 1.2 2017/02/08 19:02:43 wdebeaum Exp $
 #
 # This file will be customized for a specific application by setting
 # the variables at the top of the file. If this file's name is not
@@ -12,7 +12,6 @@
 # Variables set by component Makefile
 MODULE=ModuleName
 MAIN=main.pl
-USES="TRIPS.TripsModule TRIPS.KQML TRIPS.util"
 PYTHON_FLAGS=
 
 # Root of TRIPS installation
@@ -24,22 +23,11 @@ fi
 
 # Python interpreter
 if test -z "$PYTHON"; then
-    PYTHON=/usr/bin/jython
+    PYTHON=/usr/bin/python
 fi
 
 etcdir="$TRIPS_BASE/etc"
 moduledir="$etcdir/$MODULE"
-
-if test -z "$JYTHONPATH" ; then
-  JYTHONPATH="$moduledir:$etcdir"
-else
-  JYTHONPATH="$JYTHONPATH:$moduledir:$etcdir"
-fi
-# Java archives used by this application
-for pkg in $USES; do
-    JYTHONPATH="$JYTHONPATH:$etcdir/java/$pkg.jar"
-done
-export JYTHONPATH
 
 if test -z "$PYTHONPATH" ; then
   PYTHONPATH="$moduledir:$etcdir"
