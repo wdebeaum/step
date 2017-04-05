@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 # batch.rb - process a big batch of short (sentence- or paragraph-length) text units in parallel
-# 2016-09-16
+# 2017-04-04
 # William de Beaumont
 #
 # Run "./batch.rb --help" for usage information.
@@ -20,6 +20,24 @@ require 'thwait'
 #
 
 Infinity = 1.0/0.0 # for unspecified column range ends
+
+def parse_ranges(str)
+  str.split(/,/).collect { |range_str|
+    case range_str
+      when /^\d+$/
+	i = range_str.to_i
+	i..i
+      when /^(\d+)-(\d+)$/
+	$1.to_i..$2.to_i
+      when /^(\d+)-$/
+	$1.to_i..Infinity
+      when /^-(\d+)$/
+	1..$2.to_i
+      else
+	raise "bogus range spec in --text-columns: #{range_str}"
+    end
+  }
+end
 
 Options = OpenStruct.new
 
@@ -134,22 +152,25 @@ EOB
       Options.drop_headings = true
     }
 
-    opts.on('-iINTEGER', '--id-column=INTEGER', Integer,
+    opts.on('-iLIST', '--id-columns=LIST',
       #                                           #
-      "The (one-based) column to take the text",
+      "The (one-based) column(s) to take the text",
       "unit ID from (not valid with",
       " \b--input-file-format=txt). IDs are used",
       "to name the .xml files, so they are",
       "restricted to contain only letters,",
       "numbers, periods, underscores, and hyphens.",
-      "The default is to construct IDs using the",
-      "individual filename, followed by a hyphen",
-      "and a zero-padded, zero-based line number",
-      "(not counting dropped headings). Line",
-      " numbers are not appended in",
-      " \b--one-text-unit-per-file mode.") { |c|
-      c >= 1 or raise "expected positive integer ID column index, but got #{c}"
-      Options.id_column = c
+      "Other characters are replaced with",
+      "underscores. The default is to construct",
+      "IDs using the individual filename, followed",
+      "by a hyphen and a zero-padded, zero-based",
+      "line number (not counting dropped",
+      "headings). Line numbers are not appended in",
+      " \b--one-text-unit-per-file mode. This",
+      "option can take a list of columns, in the",
+      "same format as --text-columns. In that",
+      "case, the columns are joined with dashes.") { |str|
+      Options.id_column_ranges = parse_ranges(str)
     }
 
     opts.on('-cLIST', '--text-columns=LIST',
@@ -173,23 +194,26 @@ EOB
       "  -M  means the Mth column and everything",
       "      before it.",
       "The default is to use all columns that",
-      "aren't the ID column.") { |str|
-      Options.text_column_ranges =
-	str.split(/,/).collect { |range_str|
-	case range_str
-	  when /^\d+$/
-	    i = range_str.to_i
-	    i..i
-	  when /^(\d+)-(\d+)$/
-	    $1.to_i..$2.to_i
-	  when /^(\d+)-$/
-	    $1.to_i..Infinity
-	  when /^-(\d+)$/
-	    1..$2.to_i
-	  else
-	    raise "bogus range spec in --text-columns: #{range_str}"
-	end
-      }
+      "aren't ID columns.") { |str|
+      Options.text_column_ranges = parse_ranges(str)
+    }
+
+    opts.on('-l', '--pass-sentences',
+      #                                           #
+      "Pass sentence segmentation information to",
+      "TRIPS, via OneSentencePerLine. Instead of",
+      "joining sentences with spaces, they're",
+      "joined with newlines. Sentence-final",
+      "punctuation is not added. (Mnemonic:",
+      "Lines).") {
+      Options.pass_sentences = true
+    }
+
+    opts.on('-rREGEXP', '--sentence-split-regexp=REGEXP', Regexp,
+      #                                           #
+      "Split sentences within single columns on",
+      "the given regular expression.") { |re|
+      Options.sentence_split_regexp = re
     }
 
     opts.on('-1', '--one-text-unit-per-file',
@@ -210,23 +234,23 @@ EOB
       "    data, version 3 (from 2015-12), options",
       "    are:",
       "      --drop-headings",
-      "      --id-column=1",
+      "      --id-columns=1",
       "      --text-columns=4-",
       "  'rocstories2016' is the Spring 2016",
       "    version, options are:",
       "      --drop-headings",
-      "      --id-column=1",
+      "      --id-columns=1",
       "      --text-columns=3-",
       "  'rocstories2017' is the Winter 2017",
       "    version, options are:",
       "      --drop-headings",
-      "      --id-column=1",
+      "      --id-columns=1",
       "      --text-columns=3-",
       "      --input-file-format=csv",
       "  'cloze' is Nasrin's Cloze Test data,",
       "    options are:",
       "      --drop-headings",
-      "      --id-column=1",
+      "      --id-columns=1",
       "      --text-columns=2-7",
       "  'obdata' is the data Omid sent me on",
       "    2016-01-04, options are:",
@@ -238,13 +262,13 @@ EOB
       ARGV.push(*(
 	case p
 	  when 'rocstories2015'
-	    %w{--drop-headings --id-column=1 --text-columns=4-}
+	    %w{--drop-headings --id-columns=1 --text-columns=4-}
 	  when 'rocstories2016'
-	    %w{--drop-headings --id-column=1 --text-columns=3-}
+	    %w{--drop-headings --id-columns=1 --text-columns=3-}
 	  when 'rocstories2017'
-	    %w{--drop-headings --id-column=1 --text-columns=3- --input-file-format=csv}
+	    %w{--drop-headings --id-columns=1 --text-columns=3- --input-file-format=csv}
 	  when 'cloze'
-	    %w{--drop-headings --id-column=1 --text-columns=2-7}
+	    %w{--drop-headings --id-columns=1 --text-columns=2-7}
 	  when 'obdata'; %w{--one-text-unit-per-file}
 	  when 'obfiles'; %w{--input-file-format=txt}
 	  else raise "unknown preset #{p.inspect}"
@@ -330,8 +354,8 @@ EOB
   if (Options.input_format == 'txt')
     Options.drop_headings and
       raise "--drop-headings is incompatible with --input-file-format=txt"
-    Options.id_column.nil? or
-      raise "--id-column is incompatible with --input-file-format=txt"
+    Options.id_column_ranges.nil? or
+      raise "--id-columns is incompatible with --input-file-format=txt"
     Options.text_column_ranges.nil? or
       raise "--text-columns is incompatible with --input-file-format=txt"
   end
@@ -366,28 +390,65 @@ module Enumerable
   end
 end
 
+def get_column_ranges(cols, column_ranges)
+  column_ranges.collect_concat { |range|
+    # Array#[] doesn't accept infinite ranges, so make it finite
+    finite_range =
+      (range.end == Infinity ? (range.begin..(cols.size-1)) : range)
+    cols[finite_range]
+  }
+end
+
+# return a list of column ranges that select all the columns that column_ranges
+# wouldn't
+def invert_column_ranges(column_ranges)
+  max_finite_column =
+    column_ranges.collect { |x| x.end.finite? ? x.end : 0 }.max
+  all_finite = column_ranges.all? { |x| x.end.finite? }
+  inverse = [0..0]
+  max_finite_column.times { |i|
+    unless (column_ranges.any? { |x| x.cover?(i) })
+      if (i == inverse[-1].end + 1)
+	inverse[-1] = inverse[-1].start..i
+      else
+	inverse.push(i..i)
+      end
+    end
+  }
+  inverse.push((max_finite_column+1)..Infinity) if (all_finite)
+  return inverse
+end
+
 # given the current Options, and the column values of one row, return a text
 # unit string, and add an ID to the ids list if appropriate
 def row_to_text_unit(cols, ids)
   # prefix nil to account for one-based column indices
   cols = [nil] + cols
-  unless (Options.id_column.nil?)
+  unless (Options.id_column_ranges.nil?)
     # save the ID column
-    id = cols[Options.id_column]
-    id =~ /^[\w\.-]+$/ or raise "bogus text unit ID: #{id}"
+    id = get_column_ranges(cols, Options.id_column_ranges).join('-')
+    id.gsub!(/[^\w\.-]/, '_')
     ids << id
   end
-  if (Options.text_column_ranges)
-    Options.text_column_ranges.collect_concat { |range|
-      # Array#[] doesn't accept infinite ranges, so make it finite
-      finite_range =
-        (range.end == Infinity ? (range.begin..(cols.size-1)) : range)
-      cols[finite_range]
-    }.join_sentences
+  text_column_ranges = (
+    Options.text_column_ranges || (
+      # get all the non-ID columns as the text unit
+      Options.id_column_ranges.nil? ?
+        (1..Infinity) :
+	invert_column_ranges(Options.id_column_ranges)
+    )
+  )
+  sentences = get_column_ranges(cols, text_column_ranges)
+  if (Options.sentence_split_regexp)
+    sentences =
+      sentences.collect_concat { |col|
+        col.split(Options.sentence_split_regexp)
+      }
+  end
+  if (Options.pass_sentences)
+    sentences.join("\n")
   else
-    # get all the non-ID columns as the text unit
-    cols.delete_at(Options.id_column) if (Options.id_column)
-    cols.drop(1).join_sentences
+    sentences.join_sentences
   end
 end
 
@@ -431,7 +492,7 @@ def read_text_units_from_file(filename)
 	}
       end
       # make IDs if they're not from a column
-      unless (Options.id_column)
+      unless (Options.id_column_ranges)
         num_digits = Math.log10(text_units.size).ceil
 	ids = text_units.size.times { |i| bn + ("-%0#{num_digits}d" % [i]) }
       end
@@ -510,11 +571,15 @@ class StepParseFiles
       @last_story_id = id
       output_file = "#{@logdir}/#{id}.xml"
       $stderr.puts "starting #{id}..."
+      query = KQML[:input => text, :"semantic-skeleton-scoring" => "on"]
+      if (Options.pass_sentences)
+	query[:"tag-type"] = "(or default one_sentence_per_line)"
+      end
       times = Benchmark.measure {
 	reply =
 	  timeout(Options.timeout) {
 	    send_and_wait(KQML[:request, :receiver => :webparser, :content =>
-	      KQML[:http, :post, "step", :query => KQML[:input => text, :"semantic-skeleton-scoring" => "on"]]
+	      KQML[:http, :post, "step", :query => query]
 	    ])
 	  }
 	raise "expected :content-type \"text/xml...\"" unless (reply[:"content-type"] =~ /^text\/xml/)
