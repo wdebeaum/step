@@ -679,7 +679,9 @@
  :parent ONT::position-reln
  :arguments (;(:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +) 
 		;		      (f::type (? tt ONT::MOTION ONt::APPLY-FORCE ONT::PUT))))
-	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::abstr-obj F::situation))) ; meeting is SITUATION (move the meeting up the stairs)
+	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj
+					 F::abstr-obj ; "move the plan up the agenda"?
+					 F::situation))) ; meeting is SITUATION (move the meeting up the stairs)
 	     (:ESSENTIAL ONT::GROUND (F::Phys-obj))
             )
  )
@@ -687,7 +689,22 @@
 (define-type ont::direction-down
     :parent ONT::DIRECTION)
 
+(define-type ont::direction-down-ground
+    :comment "this is the transitive 'down' that has a GROUND that describes a physical object and locations objects or events"
+    :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
+					 F::situation)))
+		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
+    :parent ONT::DIRECTION)
+
 (define-type ont::direction-up
+    :comment "This is the intransitive 'up' and is relative to some scale/domain: e.g., the temperature is up, move the ball up"
+    :parent ONT::DIRECTION)
+
+(define-type ont::direction-up-ground
+    :comment "this is the transitive 'up' that has a GROUND that describes a physical object and locations objects or events"
+    :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
+					 F::situation)))
+		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
     :parent ONT::DIRECTION)
 
 ;; north, south, east, west
