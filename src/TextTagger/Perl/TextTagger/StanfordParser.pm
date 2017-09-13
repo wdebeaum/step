@@ -3,7 +3,7 @@
 package TextTagger::StanfordParser;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(init_stanford_parser ready_stanford_parser run_stanford_parser $debug);
+@EXPORT_OK = qw(init_stanford_parser ready_stanford_parser run_stanford_parser fini_stanford_parser $debug);
 
 use IPC::Open2;
 use TextTagger::Tags2Trips qw(stanford_word_re $previous_word_ended_with_period $min_clause_length @penn_clause_tags);
@@ -20,6 +20,12 @@ sub init_stanford_parser
   $stanford_pid = open2($stanford_in, $stanford_out, $ENV{TRIPS_BASE} . "/bin/ParserFilter");
   binmode $stanford_in, ':utf8';
   binmode $stanford_out, ':utf8';
+}
+
+sub fini_stanford_parser {
+  close($stanford_in);
+  close($stanford_out);
+  waitpid $stanford_pid, 0;
 }
 
 sub ready_stanford_parser
@@ -166,6 +172,7 @@ push @TextTagger::taggers, {
   init_function => \&init_stanford_parser,
   ready_function => \&ready_stanford_parser,
   tag_function => \&run_stanford_parser,
+  fini_function => \&fini_stanford_parser,
   output_types => [qw(phrase clause pos)],
   input_types => ['sentence']
 };

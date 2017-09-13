@@ -3,7 +3,7 @@
 package TextTagger::PersonalNames;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(init_name_tagger ready_name_tagger tag_personal_names);
+@EXPORT_OK = qw(init_name_tagger ready_name_tagger tag_personal_names fini_name_tagger);
 
 use IPC::Open2;
 
@@ -48,6 +48,12 @@ sub init_name_tagger {
                      $ENV{TRIPS_BASE} . "/etc/TextTagger/personal-names.tsv");
   binmode $terms_in, ':utf8';
   binmode $terms_out, ':utf8';
+}
+
+sub fini_name_tagger {
+  close($terms_in);
+  close($terms_out);
+  waitpid $terms_pid, 0;
 }
 
 sub ready_name_tagger {
@@ -100,6 +106,7 @@ push @TextTagger::taggers, {
   init_function => \&init_name_tagger,
   ready_function => \&ready_name_tagger,
   tag_function => \&tag_personal_names,
+  fini_function => \&fini_name_tagger,
   output_types => ['named-entity'],
   input_text => 1
 };

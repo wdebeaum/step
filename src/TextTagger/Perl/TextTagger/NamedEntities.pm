@@ -3,7 +3,7 @@
 package TextTagger::NamedEntities;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw($NER_DIR init_named_entity_tagger ready_named_entity_tagger tag_named_entities);
+@EXPORT_OK = qw($NER_DIR init_named_entity_tagger ready_named_entity_tagger tag_named_entities fini_named_entity_tagger);
 
 use IPC::Open2;
 use TextTagger::Escape qw(unescape_backslashes);
@@ -25,6 +25,12 @@ sub init_named_entity_tagger
   binmode $stanford_in, ':utf8';
   binmode $stanford_out, ':utf8';
 #    "cd $NER_DIR ; java -Xmx1024m -cp stanford-ner.jar:. NERFilter");
+}
+
+sub fini_named_entity_tagger {
+  close($stanford_in);
+  close($stanford_out);
+  waitpid $stanford_pid, 0;
 }
 
 sub ready_named_entity_tagger
@@ -134,6 +140,7 @@ push @TextTagger::taggers, {
   init_function => \&init_named_entity_tagger,
   ready_function => \&ready_named_entity_tagger,
   tag_function => \&tag_named_entities,
+  fini_function => \&fini_named_entity_tagger,
   output_types => ['named-entity'],
   input_text => 1
 };

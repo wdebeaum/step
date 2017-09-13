@@ -3,7 +3,7 @@
 package TextTagger::POS;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(init_pos_tagger ready_pos_tagger tag_pos $debug);
+@EXPORT_OK = qw(init_pos_tagger ready_pos_tagger tag_pos fini_pos_tagger $debug);
 
 use IPC::Open2;
 use TextTagger::Tags2Trips qw(%penn2trips_punc);
@@ -20,6 +20,12 @@ sub init_pos_tagger
   $stanford_pid = open2($stanford_in, $stanford_out, $ENV{TRIPS_BASE} . "/bin/POSFilter");
   binmode $stanford_in, ':utf8';
   binmode $stanford_out, ':utf8';
+}
+
+sub fini_pos_tagger {
+  close($stanford_in);
+  close($stanford_out);
+  waitpid $stanford_pid, 0;
 }
 
 sub ready_pos_tagger
@@ -113,6 +119,7 @@ push @TextTagger::taggers, {
   init_function => \&init_pos_tagger,
   ready_function => \&ready_pos_tagger,
   tag_function => \&tag_pos,
+  fini_function => \&fini_pos_tagger,
   output_types => [qw(pos)],
   input_text => 1
 };
