@@ -434,7 +434,7 @@ def row_to_text_unit(cols, ids)
     Options.text_column_ranges || (
       # get all the non-ID columns as the text unit
       Options.id_column_ranges.nil? ?
-        (1..Infinity) :
+        [1..Infinity] :
 	invert_column_ranges(Options.id_column_ranges)
     )
   )
