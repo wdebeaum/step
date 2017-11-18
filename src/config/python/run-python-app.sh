@@ -2,7 +2,7 @@
 #
 # run-python-app.sh: Shell script wrapper for launching a Python app
 #
-# $Id: run-python-app.sh,v 1.2 2017/02/08 19:02:43 wdebeaum Exp $
+# $Id: run-python-app.sh,v 1.3 2017/11/17 17:08:01 wdebeaum Exp $
 #
 # This file will be customized for a specific application by setting
 # the variables at the top of the file. If this file's name is not
@@ -10,6 +10,7 @@
 #
 
 # Variables set by component Makefile
+VENV_SH
 MODULE=ModuleName
 MAIN=main.pl
 PYTHON_FLAGS=
