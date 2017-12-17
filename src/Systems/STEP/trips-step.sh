@@ -113,15 +113,16 @@ rkill() {
 cat - <<_EOF_ >/tmp/trips$$
 (register :name init)
 (tell :content (status ready))
-(request
- :receiver facilitator
- :content (start-module
-           :name RDFMatcher
-           :class TRIPS.RDFMatcher.RDFMatcher
-           :urlclasspath `$TRIPS_BASE/bin/RDFMatcher classpath`
-	   :argv ($port_opt)
-))
 _EOF_
+# we don't really use RDFMatcher/LFEvaluator anymore
+#(request
+# :receiver facilitator
+# :content (start-module
+#           :name RDFMatcher
+#           :class TRIPS.RDFMatcher.RDFMatcher
+#           :urlclasspath `$TRIPS_BASE/bin/RDFMatcher classpath`
+#	   :argv ($port_opt)
+#))
 
 # Modules not started by the java process have to start *after* the
 # Facilitator so they can connect, so we use the form (sleep 5; foo) &

@@ -18,8 +18,10 @@ LISP_MODULES = \
 	Parser \
 	SimpleKB \
 	IM \
-	LFEvaluator \
 	ChannelKB
+
+# requires an extra download, and we don't really use it anymore
+#	LFEvaluator
 
 # doesn't compile for lack of parser::read-expression function
 #	DiscourseContext
@@ -32,8 +34,10 @@ SPEECH_LIBS = \
 SPEECH_PROGRAMS = \
 
 JAVA_PROGRAMS = \
-	Facilitator \
-	RDFMatcher
+	Facilitator
+
+# see LFEvaluator comment above
+#	RDFMatcher
 
 OTHER_PROGRAMS = \
 	TextPP \

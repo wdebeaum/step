@@ -4,7 +4,7 @@
 # src/Systems/STEP/Vagrantfile
 #   - a way to easily, reliably, inefficiently set up the TRIPS STEP system
 # William de Beaumont
-# 2016-03-24
+# 2017-12-16
 #
 # USAGE:
 #
@@ -179,8 +179,8 @@ Vagrant.configure(2) do |config|
     set -eux
     # Go there and fetch the dependencies from the web, unpacking as needed.
     cd /usr/local/share
-    # similarity flooding library
-    wget "http://www-diglib.stanford.edu/~melnik/mm/sfa/sfa-2003-11-17.jar"
+    # similarity flooding library (no longer needed)
+    #wget "http://www-diglib.stanford.edu/~melnik/mm/sfa/sfa-2003-11-17.jar"
     # Make subdirectories for the rest of the dependencies, because that's what
     # configure expects.
     mkdir wordnet geonames stanford-{ner,parser,postagger}
