@@ -43,9 +43,11 @@ OTHER_PROGRAMS = \
 	TextPP \
 	TextTagger \
 	Graphviz \
-	Diesel \
 	SkeletonScore \
 	Tools
+
+# Rik says SkeletonScore no longer needs this, and the domain expired
+#	Diesel \
 
 include Makefile-common
 
