@@ -1,7 +1,7 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 # batch.rb - process a big batch of short (sentence- or paragraph-length) text units in parallel
-# 2017-04-04
+# 2018-02-09
 # William de Beaumont
 #
 # Run "./batch.rb --help" for usage information.
@@ -494,7 +494,7 @@ def read_text_units_from_file(filename)
       # make IDs if they're not from a column
       unless (Options.id_column_ranges)
         num_digits = Math.log10(text_units.size).ceil
-	ids = text_units.size.times { |i| bn + ("-%0#{num_digits}d" % [i]) }
+	ids = text_units.size.times.collect { |i| bn + ("-%0#{num_digits}d" % [i]) }
       end
       return ids.zip(text_units)
     end
