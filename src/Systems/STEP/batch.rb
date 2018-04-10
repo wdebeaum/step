@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # batch.rb - process a big batch of short (sentence- or paragraph-length) text units in parallel
-# 2018-02-09
+# 2018-04-09
 # William de Beaumont
 #
 # Run "./batch.rb --help" for usage information.
@@ -83,10 +83,20 @@ run the same command again. If you move the incomplete batches to a
 subdirectory whose name starts with 'old', their .xml files will not appear in
 the output archive.
 
+You should create a new output directory every time you run batch.rb with
+different options or different input files.
+
 NOTE: besides the usual STEP checkout, you also need to get these directories
 before you configure and build STEP for use with this program:
   $TRIPS_BASE/src/WebParser/
   $TRIPS_BASE/src/config/ruby/
+If you got STEP using CVS, you can get these with:
+  cd $TRIPS_BASE/src/
+  cvs update -d WebParser config/ruby
+If you got STEP using git, you can get WebParser from its own github repo:
+  https://github.com/wdebeaum/WebParser
+and you can copy src/config/ruby/ from the cogent github repo:
+  https://github.com/wdebeaum/cogent
 
 EOB
 
@@ -364,9 +374,13 @@ EOB
   end
   ENV.key?('TRIPS_BASE') or raise "TRIPS_BASE environment variable unset"
   File.exists?(ENV['TRIPS_BASE']+'/src/WebParser/') or
-    raise "You need to check out src/WebParser/ and rebuild the lisp image before using this program."
+    raise "You need to check out src/WebParser/ and rebuild the STEP lisp image before using this program. (You do not need to 'make install' in src/WebParser/, just check it out.)"
   File.exists?(ENV['TRIPS_BASE']+'/src/config/ruby/') or
     raise "You need to check out src/config/ruby/, (re-)run configure, and 'make install' in src/KQML/ and src/TripsModule/ before using this program."
+  File.exists?(ENV['TRIPS_BASE']+'/etc/TripsModule/trips_module.rb') or
+    raise "You need to configure and install STEP before using this program. In particular, the Ruby version of the TripsModule library is not installed. (Did you remember to re-configure and re-install after checking out src/config/ruby/?)"
+  File.exists?(ENV['TRIPS_BASE']+'/etc/KQML/kqml.rb') or
+    raise "The Ruby version of the KQML library is not installed; you need to do 'make install' in src/KQML/."
 
 rescue => e
   $stderr.puts "Error: #{e.message}" # no backtrace
