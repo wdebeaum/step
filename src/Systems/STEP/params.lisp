@@ -19,7 +19,7 @@
 	(parser::*use-tags-as-filter* t)        ;;  indicate we should use POS information
 	(parser::*bad-tag-multiplier* .98)       ;;  penalty multiplier for lex entries that do not match POS tags
 	(parser::*skeleton-constit-cats* '(W::NP W::CP W::VP W::ADVBL W::S))  ;; constituents that we expect in the skeleton
-	(parser::*skeleton-boost-factor* 1.01)   ;;  boost if we build a constituent that matches the skeleton (from stat. parser)
+	(parser::*skeleton-boost-factor* 0.2)   ;;  boost if we build a constituent that matches the skeleton (from stat. parser)
 	;;(parser::*remove-subsumed-skeleton-constit* t)  ;; remove subsumed constits in skeleton (e.g., NP within NP) as they are unreliable predictors
 	((setf (parser::barrier-penalty parser::*chart*) .99))        ;; this is the penalty for arcs that attempt to cross barriers from the preferences from stat parser
 	(parser::*kr-type-info-desired* '(:WNsense))
@@ -31,7 +31,7 @@
 	((setf (parser::flexible-semantic-matching parser::*chart*) t))  ;;  selection preferences rather than restrictions
 	((setf (parser::number-parses-desired parser::*chart*) 4))  ;; get # interpretations before stopping
 	(parser::*include-parse-tree-in-messages* '(w::lex)) ;; required for WebParser
-	(parser::*semantic-skeleton-scoring-enabled* t) ; enable semantic scoring
+	(parser::*semantic-skeleton-scoring-enabled* nil) ; disable semantic scoring
 	((parser::customize-cost-table '((ont::SA_QUERY 1.2) (ont::SA_IDENTIFY 2) (ont::SA_pred-fragment 2) 
 					 (ont::SA_request 1.2) (ont::SA_YN-QUESTION 1.2)
 					 (ont::SA_CONFIRM 1.3) (ont::SA_WH-QUESTION 1.2) (ont::SA_TELL 1)(w::CP 2) (w::VP 2) 
