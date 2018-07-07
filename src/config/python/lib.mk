@@ -1,7 +1,7 @@
 #
 # config/python/lib.mk
 #
-# $Id: lib.mk,v 1.2 2017/11/17 17:08:01 wdebeaum Exp $
+# $Id: lib.mk,v 1.3 2018/07/06 15:00:12 wdebeaum Exp $
 #
 # The following should be defined before this file is included:
 #  MODULE - The name of this TRIPS module
@@ -22,7 +22,7 @@ install::
 
 # if we have requirements, install them in a virtualenv dir
 ifdef REQUIREMENTS
-VIRTUALENV=$(dir $(shell which $(PIP)))virtualenv
+VIRTUALENV=$(dir $(shell readlink `which $(PIP)` || which $(PIP)))virtualenv
 VENV_DIR=$(etcdir)/venv
 VENV_SH=$(VENV_DIR)/bin/activate
 $(info VIRTUALENV=$(VIRTUALENV))
