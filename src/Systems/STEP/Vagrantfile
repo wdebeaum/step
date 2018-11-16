@@ -4,7 +4,7 @@
 # src/Systems/STEP/Vagrantfile
 #   - a way to easily, reliably, inefficiently set up the TRIPS STEP system
 # William de Beaumont
-# 2017-12-16
+# 2018-11-15
 #
 # USAGE:
 #
@@ -183,7 +183,7 @@ Vagrant.configure(2) do |config|
     #wget "http://www-diglib.stanford.edu/~melnik/mm/sfa/sfa-2003-11-17.jar"
     # Make subdirectories for the rest of the dependencies, because that's what
     # configure expects.
-    mkdir wordnet geonames stanford-{ner,parser,postagger}
+    mkdir wordnet geonames stanford-corenlp
     # WordNet 3.0, with glosstags
     # Note that we could get WordNet from Gentoo, but it doesn't include
     # glosstags, and isn't in a location that configure expects.
@@ -198,18 +198,10 @@ Vagrant.configure(2) do |config|
     wget "http://geonames.usgs.gov/docs/stategaz/NationalFile_20160601.zip" \
       -O 2016-06-01/NationalFile.zip
     # Note: no need to unpack NationalFile.zip.
-    # Stanford Named Entity Recognizer
-    cd ../stanford-ner
-    wget "http://nlp.stanford.edu/software/stanford-ner-2007-11-05.tar.gz"
-    tar -zxf stanford-ner-2007-11-05.tar.gz
-    # Stanford Parser
-    cd ../stanford-parser
-    wget "http://nlp.stanford.edu/software/stanford-parser-2007-08-19.tar.gz"
-    tar -zxf stanford-parser-2007-08-19.tar.gz
-    # Stanford Part Of Speech Tagger
-    cd ../stanford-postagger
-    wget "http://nlp.stanford.edu/software/stanford-postagger-2008-06-06.tar.gz"
-    tar -zxf stanford-postagger-2008-06-06.tar.gz
+    # Stanford CoreNLP
+    cd ../stanford-corenlp
+    wget "http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip"
+    tar -zxf stanford-corenlp-full-2015-12-09.zip
   UNPACKAGED_DEPS
 
   config.vm.provision "trips", type: "shell", privileged: false,

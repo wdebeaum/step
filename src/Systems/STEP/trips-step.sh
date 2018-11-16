@@ -140,20 +140,18 @@ fi
 (sleep 5; $TRIPS_BASE/bin/TextTagger \
   $port_opt \
   -process-input-utterances yes \
-  -init-taggers terms,named-entities,stanford_pos,stanford_parser,alternate_spellings,word-net,personal-names \
+  -init-taggers terms,stanford_core_nlp,alternate_spellings,word-net,personal-names \
   -default-type [or \
     affixes \
     terms \
     words \
     punctuation \
-    named_entities \
     street_addresses \
     capitalized_names \
     alphanumerics \
     quotations \
     alternate_spellings \
-    [and stanford_pos pos] \
-    stanford_parser \
+    stanford_core_nlp \
     word-net \
     personal-names \
     ] \
