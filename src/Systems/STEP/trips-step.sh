@@ -140,7 +140,7 @@ fi
 (sleep 5; $TRIPS_BASE/bin/TextTagger \
   $port_opt \
   -process-input-utterances yes \
-  -init-taggers terms,stanford_core_nlp,alternate_spellings,word-net,personal-names \
+  -init-taggers terms,stanford_core_nlp,alternate_spellings,word-net,personal-names,countries \
   -default-type [or \
     affixes \
     terms \
@@ -154,6 +154,7 @@ fi
     stanford_core_nlp \
     word-net \
     personal-names \
+    countries \
     ] \
   2>&1 | tee TextTagger.err) &
 
