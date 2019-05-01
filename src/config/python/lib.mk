@@ -1,7 +1,7 @@
 #
 # config/python/lib.mk
 #
-# $Id: lib.mk,v 1.3 2018/07/06 15:00:12 wdebeaum Exp $
+# $Id: lib.mk,v 1.4 2019/04/30 15:06:05 wdebeaum Exp $
 #
 # The following should be defined before this file is included:
 #  MODULE - The name of this TRIPS module
@@ -34,7 +34,15 @@ $(VIRTUALENV):
 
 $(VENV_SH): $(VIRTUALENV)
 	$(MKINSTALLDIRS) $(VENV_DIR)
-	$(VIRTUALENV) $(VENV_DIR)
+	# pip refuses to install its own virtualenv if it's already installed
+	# somewhere, but still "succeeds" in that case, so try to use pip's own
+	# virtualenv, but if it doesn't exist, fall back to whatever is in the
+	# path. Also make sure it's using the configured python executable.
+	if test -e $(VIRTUALENV) ; then \
+	  $(VIRTUALENV) -p $(PYTHON) $(VENV_DIR) ; \
+	else \
+	  virtualenv -p $(PYTHON) $(VENV_DIR) ; \
+	fi
 
 install:: $(REQUIREMENTS) $(VENV_SH)
 	# NOTE: this uses pip, not $(PIP), so that it uses venv's pip
