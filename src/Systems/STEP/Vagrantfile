@@ -201,7 +201,7 @@ Vagrant.configure(2) do |config|
     # Stanford CoreNLP
     cd ../stanford-corenlp
     wget "http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip"
-    tar -zxf stanford-corenlp-full-2015-12-09.zip
+    unzip stanford-corenlp-full-2015-12-09.zip
   UNPACKAGED_DEPS
 
   config.vm.provision "trips", type: "shell", privileged: false,
