@@ -28,7 +28,7 @@ Options.trips_exe = 'trips-step'
 Options.trips_argv = %w{-display none}
 Options.wait_for = 'SKELETONSCORE'
 Options.web_parser_name = 'step'
-Options.web_parser_params = { :"semantic-skeleton-scoring" => "on" }
+#Options.web_parser_params = { :"semantic-skeleton-scoring" => "on" }
 
 Presets.merge!({
   'rocstories2015' => {
