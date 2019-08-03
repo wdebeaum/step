@@ -29,7 +29,7 @@
         ((parser::setmaxchartsize 5000))        ;;  max #  characters in any input
 	((setf (parser::number-parses-to-find parser::*chart*) 10))
 	((setf (parser::flexible-semantic-matching parser::*chart*) t))  ;;  selection preferences rather than restrictions
-	((setf (parser::number-parses-desired parser::*chart*) 4))  ;; get # interpretations before stopping
+	((setf (parser::number-parses-desired parser::*chart*) 10))  ;; get # interpretations before stopping
 	(parser::*include-parse-tree-in-messages* '(w::lex)) ;; required for WebParser
 	(parser::*semantic-skeleton-scoring-enabled* nil) ; disable semantic scoring
 	((parser::customize-cost-table '((ont::SA_QUERY 1.2) (ont::SA_IDENTIFY 1.8) (ont::SA_pred-fragment 2) 
