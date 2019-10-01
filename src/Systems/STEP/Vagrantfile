@@ -4,7 +4,7 @@
 # src/Systems/STEP/Vagrantfile
 #   - a way to easily, reliably, inefficiently set up the TRIPS STEP system
 # William de Beaumont
-# 2018-11-15
+# 2019-09-30
 #
 # USAGE:
 #
@@ -91,7 +91,7 @@
 
 Vagrant.configure(2) do |config|
   # Start with minimal Gentoo Linux.
-  config.vm.box = "cmiles/gentoo-amd64-minimal"
+  config.vm.box = "generic/gentoo" # from roboxes.org
   # Run on VirtualBox with more than the default 1 GB of memory.
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2560" # 2.5 GB (a guess)
@@ -112,21 +112,8 @@ Vagrant.configure(2) do |config|
 		dev-java/icedtea-bin -alsa -cjk -cups -gtk -webstart
 		media-gfx/graphviz svg -cairo
 		media-libs/gd truetype jpeg png fontconfig
+		dev-lang/python sqlite
 		USE
-    # Make it so we can use Java 1.8 (which SkeletonScore needs) and SBCL 1.3
-    # (which Parser needs), as opposed to the current default versions 1.7 and
-    # 1.1.
-    # We don't use Oracle Java because it's "fetch restricted", meaning the
-    # user must manually download the package from the website before Gentoo
-    # will install it, for legal reasons.
-    # Note that icedtea version 3 is actually Java version 1.8, and is newer
-    # than icedtea 7, which is Java 1.7.
-    cat >/etc/portage/package.accept_keywords/trips <<-KEYWORDS
-		=dev-java/icedtea-bin-3* ~amd64
-		=dev-lisp/sbcl-1.3* ~amd64
-		=dev-lisp/asdf-3.1* ~amd64
-		=dev-lisp/uiop-3.1* ~amd64
-		KEYWORDS
   GENTOO_CONFIG
 
 #  config.vm.provision "gentoo-update", type: "shell", privileged: true,
@@ -148,19 +135,27 @@ Vagrant.configure(2) do |config|
     set -eux
     # Install packages needed by TRIPS STEP (these few will pull in ~100
     # dependencies, so it could take a while).
+    # We don't use Oracle Java because it's "fetch restricted", meaning the
+    # user must manually download the package from the website before Gentoo
+    # will install it, for legal reasons.
     # Note that ":8" selects the version of icedtea-bin that is in slot 8,
     # which corresponds to Java 1.8, and icedtea 3. Slots are Gentoo's way of
     # being able to install multiple versions of the same package with
     # different APIs simultaneously. But here we're using it to get around the
     # fact that Gentoo is confused because 3 > 7 in crazy Java land.
+    # Also note that while gentoo already has python installed (portage is
+    # written in python), it doesn't have the sqlite USE flag set by default,
+    # so we need to reinstall it here.
     emerge \
 	    dev-vcs/cvs \
+	    dev-vcs/git \
 	    dev-lisp/sbcl \
 	    dev-java/icedtea-bin:8 \
 	    dev-lang/ruby \
 	    dev-perl/DBD-SQLite \
-	    media-gfx/graphviz \
-	    dev-lang/scala-bin
+	    dev-lang/python \
+	    dev-python/pip \
+	    media-gfx/graphviz
   PACKAGED_DEPS
 
   config.vm.provision "usr-local-share", type: "shell", privileged: true,
@@ -179,8 +174,6 @@ Vagrant.configure(2) do |config|
     set -eux
     # Go there and fetch the dependencies from the web, unpacking as needed.
     cd /usr/local/share
-    # similarity flooding library (no longer needed)
-    #wget "http://www-diglib.stanford.edu/~melnik/mm/sfa/sfa-2003-11-17.jar"
     # Make subdirectories for the rest of the dependencies, because that's what
     # configure expects.
     mkdir wordnet geonames stanford-corenlp
@@ -194,14 +187,15 @@ Vagrant.configure(2) do |config|
     tar -jxf WordNet-3.0-glosstag.tar.bz2
     # US geographic names database
     cd ../geonames
-    mkdir 2016-06-01
-    wget "http://geonames.usgs.gov/docs/stategaz/NationalFile_20160601.zip" \
-      -O 2016-06-01/NationalFile.zip
+    export geonames_date=`date +'%Y-%m-%d'`
+    mkdir $geonames_date
+    wget "http://geonames.usgs.gov/docs/stategaz/NationalFile.zip" \
+      -O $geonames_date/NationalFile.zip
     # Note: no need to unpack NationalFile.zip.
     # Stanford CoreNLP
     cd ../stanford-corenlp
-    wget "http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip"
-    unzip stanford-corenlp-full-2015-12-09.zip
+    wget "http://nlp.stanford.edu/software/stanford-corenlp-full-2018-10-05.zip"
+    unzip stanford-corenlp-full-2018-10-05.zip
   UNPACKAGED_DEPS
 
   config.vm.provision "trips", type: "shell", privileged: false,

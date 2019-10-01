@@ -27,7 +27,7 @@
 ;;;
 ;;; Sample dialogues
 ;;;
-(defvar *sample-dialogues*
+(setf *sample-dialogues*
   '(
     ;; V 0.1  tests basic functionality
     ;; Send an email message (basically a macro, can be done just
