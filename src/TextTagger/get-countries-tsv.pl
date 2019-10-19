@@ -127,13 +127,32 @@ sub finish_info {
     print STDERR Data::Dumper->Dump([$info],['*info']);
     return;
   }
-  my $names = remove_duplicates([
-    grep { defined($_) }
-	 ($info->{common}, $info->{official}, @{$info->{altSpellings}})
-  ]);
-  for my $unnorm (@$names) {
+  my @names = ();
+  if (exists($info->{official})) {
+    my $unnorm = $info->{official};
     my $norm = normalize($unnorm);
-    push @{$norm2unnorm2infos{$norm}{$unnorm}}, $info;
+    push @{$norm2unnorm2infos{$norm}{$unnorm}},
+	 +{ %$info, status => 'official' };
+    push @names, $unnorm;
+  }
+  if (exists($info->{common})) {
+    my $unnorm = $info->{common};
+    unless (grep { $_ eq $unnorm } @names) {
+      my $norm = normalize($unnorm);
+      push @{$norm2unnorm2infos{$norm}{$unnorm}},
+           +{ %$info, status => 'common' };
+      push @names, $unnorm;
+    }
+  }
+  if (exists($info->{altSpellings})) {
+    for my $unnorm (@{$info->{altSpellings}}) {
+      unless (grep { $_ eq $unnorm } @names) {
+	my $norm = normalize($unnorm);
+	push @{$norm2unnorm2infos{$norm}{$unnorm}},
+	     +{ %$info, status => 'alt' };
+	push @names, $unnorm;
+      }
+    }
   }
   if (exists($info->{capitals})) {
     for my $capital (@{$info->{capitals}}) {
@@ -213,7 +232,7 @@ for my $norm (sort keys %norm2unnorm2infos) {
     print "\t$unnorm";
     for my $info (@{$unnorm2infos->{$unnorm}}) {
       if ($info->{type} eq 'country') {
-	print "\t(country :code $info->{code} :name \"" . escape_for_quotes($info->{official}) . "\")";
+	print "\t(country :code $info->{code} :name \"" . escape_for_quotes($info->{official}) . "\" :status " . $info->{status} . ")";
       } else {
 	print "\t($info->{type} ";
 	if (exists($info->{country})) {
@@ -221,7 +240,7 @@ for my $norm (sort keys %norm2unnorm2infos) {
 	} else { # countries
 	  print ":countries (" . join(' ', @{$info->{countries}}) . ")";
 	}
-	print ")";
+	print " :status name)";
       }
     }
   }
