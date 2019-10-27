@@ -1,7 +1,7 @@
 #
 # config/python/lib.mk
 #
-# $Id: lib.mk,v 1.4 2019/04/30 15:06:05 wdebeaum Exp $
+# $Id: lib.mk,v 1.5 2019/10/26 21:04:41 yan2 Exp $
 #
 # The following should be defined before this file is included:
 #  MODULE - The name of this TRIPS module
@@ -30,7 +30,8 @@ $(info VENV_DIR=$(VENV_DIR))
 $(info VENV_SH=$(VENV_SH))
 
 $(VIRTUALENV):
-	sudo $(PIP) install virtualenv
+#	sudo $(PIP) install virtualenv
+	$(PIP) install virtualenv
 
 $(VENV_SH): $(VIRTUALENV)
 	$(MKINSTALLDIRS) $(VENV_DIR)
