@@ -1,7 +1,7 @@
 #
 # config/python/lib.mk
 #
-# $Id: lib.mk,v 1.6 2019/10/29 18:46:12 wdebeaum Exp $
+# $Id: lib.mk,v 1.8 2019/12/03 22:02:42 wdebeaum Exp $
 #
 # The following should be defined before this file is included:
 #  MODULE - The name of this TRIPS module
@@ -38,7 +38,7 @@ $(VIRTUALENV):
 
 $(VENV_SH): $(VIRTUALENV)
 	$(MKINSTALLDIRS) $(VENV_DIR)
-	$(VIRTUALENV) $(VENV_DIR)
+	PYTHONPATH='$(wildcard $(prefix)/lib/python*/site-packages)' $(VIRTUALENV) $(VENV_DIR)
 
 # NOTE: this uses "pip", not "$(PIP)", so that it uses venv's pip
 install:: $(REQUIREMENTS) $(VENV_SH)
