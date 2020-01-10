@@ -16,5 +16,5 @@ downloads/MADE:
 downloads/countries.json: downloads/MADE
 	curl -L -o $@ "https://raw.githubusercontent.com/mledoze/countries/master/countries.json"
 	# add "CAR" as synonym for "Central African Republic"
-	echo -e "5399a5400\n>             \"CAR\"," |patch $@
+	echo -e "5652a5653\n>             \"CAR\"," |patch $@
 
