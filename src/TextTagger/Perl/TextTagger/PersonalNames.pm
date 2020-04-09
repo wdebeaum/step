@@ -37,6 +37,22 @@ my @blacklist = (
      It Its Itself
      They Them Their Theirs Themselves
      We Us Our Ours Ourselves
+  ),
+  # capitalized articles and quantifiers (as defined in TRIPS); not all attested
+  qw(A All Alot Another Any An
+     Both
+     Each Either Enough Every
+     Fewer Few
+     Half
+     Less Little Lots
+     Many More Most Much
+     No None Numerous
+     Only
+     Plenty
+     Several Some
+     That The These This Those
+     Various
+     What Which
   )
 );
 
