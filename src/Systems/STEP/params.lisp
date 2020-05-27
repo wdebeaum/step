@@ -35,7 +35,9 @@
 	((parser::customize-cost-table '((ont::SA_QUERY 1.2) (ont::SA_IDENTIFY 1.8) (ont::SA_pred-fragment 2) 
 					 (ont::SA_request 1.2) (ont::SA_YN-QUESTION 1.2)
 					 (ont::SA_CONFIRM 1.3) (ont::SA_WH-QUESTION 1.2) (ont::SA_TELL 1)(w::CP 2) (w::VP 2) 
-					 (w::punc .5))))
+					 (w::punc .5)
+					 (ONT::speech-act 2) ;; this occurs if we have an sequence of speech acts
+					 )))
 	))
 
 (parser::initialize-settings)   ;; do it here to set the parser for testing (so it matches the settings of the parser component)
