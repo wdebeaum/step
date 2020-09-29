@@ -191,6 +191,10 @@ while (defined(my $val = next_json_entry())) {
     push @{$info->{capitals}}, $val;
   } elsif ($path[1] =~ /^((?:sub)?region|demonym)$/) {
     $info->{$path[1]} = $val;
+  } elsif ($path[1] eq 'demonym' or # old style
+           # new style (with different languages and genders)
+           ($path[1] eq 'demonyms' and $path[2] eq 'eng' and $path[3] eq 'm')) {
+    $info->{demonym} = $val; # pretend it's the old style
   } elsif ($path[1] eq 'cca2') {
     $info->{code} = $val;
   }
