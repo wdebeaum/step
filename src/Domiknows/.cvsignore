@@ -1,0 +1,5 @@
+.*.swp
+*.fasl
+*.dot
+data
+scratch.txt

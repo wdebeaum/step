@@ -18,7 +18,8 @@ LISP_MODULES = \
 	Parser \
 	SimpleKB \
 	IM \
-	ChannelKB
+	ChannelKB \
+	Domiknows
 
 # requires an extra download, and we don't really use it anymore
 #	LFEvaluator

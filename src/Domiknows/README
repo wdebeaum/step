@@ -1,0 +1,136 @@
+Domiknows GQA question answering component
+William de Beaumont
+2020-11-25
+
+This component answers questions about visual scenes described in the GQA corpus, by parsing the questions and turning their LF graphs into simplified query graphs, and then matching the query graphs to the appropriate scene graphs. It can also display the query graphs with the help of the Graphviz TRIPS module.
+
+If you want to see graphs, enable the Graphviz display, either by calling trips-step like this:
+
+  $TRIPS_BASE/bin/trips-step -graphviz-display true
+
+Or from the Lisp REPL like this:
+
+  (enable-graphviz-display)
+
+On startup, question and scene data is loaded from the data/ subdirectory. This is an excerpt of GQA, with the scene data augmented with TRIPS ONT types, and all data converted from JSON to Lisp format (using gqa-json2lisp.pl).
+
+Additional questions from James' "Simple query algorithm new.pdf" are listed in defsys.lisp.
+
+The questions are put in structures in the *questions* variable, and the scenes are converted to graphs and put in the *scenes* variable. You can look them up by ID from the Lisp REPL like this:
+
+  (in-package :domiknows)
+
+  (find question-id *questions* :key #'question-id)
+
+  (find scene-id *scenes* :key #'scene-graph-id)
+
+To answer a question, use the answer-question KQML request:
+
+  (request :content (answer-question :id question-id))
+  (tell :content (answer :id answer-id :text "answer text" :correct-p {T|NIL}))
+
+This will also display the LF graph and the query graph, if Graphviz display is enabled. The query graph will have a green outline around the focus node (if any), and black outlines around the other nodes.
+
+For wh-questions, :id is the ID of a node in the scene graph that answers the question. For yes-no questions, :id is T or NIL.
+
+:correct-p indicates whether the generated answer :text matches the reference answer for the question.
+
+For example:
+
+  ;; Answer the question with ID 102, i.e. "Is someone on the beach":
+  (request :content (answer-question :id 102))
+  ; The query graph "ONT::person --on-> ONT::shore" is displayed, along with
+  ; the LF graph it was derived from, in separate windows.
+  ;; It does match the scene for that question (2374375), so the answer is
+  ;; "yes", which is correct:
+  (TELL :CONTENT (ANSWER :ID T :TEXT "yes" :CORRECT-P T))
+
+Questions for which there is no scene (most of James' questions) cannot be answered in this way. But you can still display the query that would be used to find the answer to the question, using the display-query request. You can give it a question ID like answer-question, or you can give it the text of a question:
+
+  (request :content (display-query :id question-id))
+
+  (request :content (display-query :text "question text"))
+
+This request does basically the same thing as answer-question, except it stops before trying to match the query to the (potentially nonexistent) scene. It won't display anything unless Graphviz display is enabled (see above).
+
+These requests will cause an error in a number of situations, including when the query graph is empty, or lacks a focus for a wh-question, or when the LF graph isn't quite what the query graph generation code expects. If you're running in -nolisp mode on sbcl, remember to connect to the debugger after each error using:
+
+  (sb-thread:release-foreground)
+
+The actual error message might be lost in previous message traffic before you do this.
+
+The graph matching algorithm is unsophisticated. It tries to match every node and edge in the query graph to some node/edge in the scene graph. It starts with the node in the query graph that was added first (since it should be nearest the root), and traverses outward edges recursively. ONT types in the query must subsume ONT types in matching part of the scene, and there's some additional handling for the :scale feature. Theoretically it's possible for a query graph to match a scene in more than one way. This algorithm will arbitrarily pick one way to match.
+
+It's possible to run through all the questions and test them, by calling (test-next-question) repeatedly, and (sb-thread:release-foreground) when errors occur. I recommend keeping a log of the Lisp console output to see the results, since they might not be the last thing printed after each test. You can do this with the script command:
+
+On Linux:
+  script lisp.log -c "sbcl --load test --eval '(run)'"
+
+On macOS:
+  script lisp.log sbcl --load test --eval '(run)'
+
+  (enable-graphviz-display)
+  (in-package :domiknows)
+  ; repeat:
+  (test-next-question)
+  (sb-thread:release-foreground) ; as needed
+
+
+Web API
+
+You can access this component over the web at:
+
+  http://trips.ihmc.us/parser/cgi/domiknows
+
+Without parameters, you'll get an HTML form for displaying query and scene
+graphs and answering questions. The accepted parameters are:
+
+  op
+    The operation to do. One of the following:
+
+      display-query-graph
+        Make a query graph using question-id or question-text, and display it.
+
+      display-scene-graph
+        Display a scene graph from scene-id or scene-json.
+
+      answer-question
+	Attempt to answer the question relative to the scene. This uses the
+	same parameters as the above two operations combined, and will also
+	display the two graphs. If Domiknows knows a reference answer to the
+	question, it will show that as well, and compare the two answers to see
+	if the system's answer is correct.
+
+  question-id
+    The ID of one of the few questions from the GQA dataset that the Domiknows
+    component knows about (they're in the drop-down menu). Alternatively, set
+    this to "custom" and use the next parameter.
+
+  question-text
+    The text of a question to parse and turn into a query graph.
+
+  scene-id
+    The ID of one of the scenes related to the set of questions Domiknows knows
+    about. Alternatively, "from-question" will take this from the question
+    (assuming you used question-id and not question-text). Or you can set this
+    to "custom" and use the next parameter.
+
+  scene-json
+    The JSON structure of a scene graph, including the scene-id key, e.g.:
+
+      { "1234567": {
+	"width": 42,
+	"height": 57,
+	"objects": {
+	  "112358": {
+	    "name": "person",
+	    ...
+	  },
+	  ...
+	}
+      }
+
+    Note that if this isn't already augmented with TRIPS ONT types, Domiknows
+    will not currently add them in (though this may change in the future).
+    Instead, the types will all be NIL. You can still display such a scene
+    graph, but it's not likely to be useful for answering questions.

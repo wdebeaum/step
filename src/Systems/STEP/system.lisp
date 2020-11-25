@@ -17,6 +17,7 @@
   (:dfc-component	:lxm	#!TRIPS"src;LexiconManager;")
   (:dfc-component	:parser	#!TRIPS"src;Parser;")
   (:dfc-component	:im	#!TRIPS"src;NewIM;")
+  (:dfc-component	:domiknows	#!TRIPS"src;Domiknows;")
   )
 
 ;; add WebParser to the system when we have its source directory
