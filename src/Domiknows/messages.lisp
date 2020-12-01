@@ -69,32 +69,41 @@
 	 (question (find uttnum *questions* :key #'question-id))
 	 )
     (when question ; this parse's uttnum matched a question we know about, therefore we must have sent that question to be parsed
-      (let* ((orig-request (question-request question))
-	     (orig-request-verb (car (find-arg-in-act orig-request :content)))
-	     (qg (lf-to-query-graph lf-terms))
-	     (scene-id (question-scene-id question))
-	     (dot (with-output-to-string (s) (write-dot s qg))))
-	(when (eq 'http orig-request-verb)
-	  (return-from handle-sentence-lfs (handle-sentence-lfs-for-web question qg scene-id dot)))
-	;; display query graph
-	(send-msg `(tell :content (lf-graph
-	    :uttnum ,(question-id question)
-	    :content ,dot)))
-	;; answer the question if we were asked to
-	(when (eq 'answer-question orig-request-verb)
-	  (unless scene-id
-	    (error "question has no scene, can't answer it"))
-	  ;; run query
-	  (let* ((sg (find scene-id *scenes* :key #'scene-graph-id))
-		 (answer-id (query-scene qg sg))
-		 (answer-text (generate-answer qg sg answer-id))
-		 )
-	    ;; reply with answer
-	    (reply-to-msg (question-request question) 'tell :content `(answer
-		:id ,answer-id
-		:text ,answer-text
-		:correct-p ,(string-equal answer-text (question-reference-answer question))
-		))))))))
+      (let ((orig-request (question-request question)))
+	(handler-bind
+	    ;; if there's an error, reply to orig-request, not sentence-lfs
+	    ((error (lambda (err)
+		      (dfc::indicate-error *component* err orig-request))))
+	  (let* ((orig-request-verb
+		   (car (find-arg-in-act orig-request :content)))
+		 (qg (lf-to-query-graph lf-terms))
+		 (scene-id (question-scene-id question))
+		 (dot (with-output-to-string (s) (write-dot s qg))))
+	    (when (eq 'http orig-request-verb)
+	      (return-from handle-sentence-lfs
+		(handle-sentence-lfs-for-web question qg scene-id dot)))
+	    ;; display query graph
+	    (send-msg `(tell :content (lf-graph
+		:uttnum ,(question-id question)
+		:content ,dot)))
+	    ;; answer the question if we were asked to
+	    (when (eq 'answer-question orig-request-verb)
+	      (unless scene-id
+		(error "question has no scene, can't answer it"))
+	      ;; run query
+	      (let* ((sg (find scene-id *scenes* :key #'scene-graph-id))
+		     (answer-id (query-scene qg sg))
+		     (answer-text (generate-answer qg sg answer-id))
+		     )
+		;; reply with answer
+		(reply-to-msg (question-request question) 'tell :content
+		  `(answer
+		    :id ,answer-id
+		    :text ,answer-text
+		    :correct-p
+		      ,(string-equal answer-text
+				     (question-reference-answer question))
+		    ))))))))))
 
 (defcomponent-handler
   '(tell &key :content (sentence-lfs . *))
