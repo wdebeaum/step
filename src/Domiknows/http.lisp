@@ -31,19 +31,19 @@
 <hr>
 <form action=\"#\" method=\"POST\">
 <div style=\"display: inline-block\">
-<label>Select a question:
+<label>Pick question:
 <select name=\"question-id\">
 <option value=\"custom\">custom</option>
 ~{~a~%~}
 </select></label>
-or
 <br>
+or
 <input type=\"text\" name=\"question-text\" placeholder=\"enter a custom question\" size=\"50\">
 <br>
 <input type=\"submit\" name=\"op\" value=\"display-query-graph\">
 </div>
 <div style=\"display: inline-block; border-left: 1px solid black;\">
-<label>Select a scene:
+<label>Pick scene:
 <select name=\"scene-id\">
 <option value=\"from-question\">use the scene from the question*</option>
 <option value=\"custom\">custom</option>
@@ -51,7 +51,7 @@ or
 </select></label>
 or
 <br>
-<textarea name=\"scene-json\" placeholder=\"enter a JSON scene graph, including its ID. { &quot;1234567&quot;: { &quot;objects&quot;: { ... } ... } } (only the first scene will be displayed)\" rows=\"20\" cols=\"80\"></textarea>
+<textarea name=\"scene-json\" placeholder=\"enter a JSON scene graph, including its ID. { &quot;1234567&quot;: { &quot;objects&quot;: { ... } ... } } (only the first scene will be displayed)\" rows=\"20\" cols=\"72\"></textarea>
 <br>
 <input type=\"submit\" name=\"op\" value=\"display-scene-graph\">
 <br>
@@ -65,8 +65,9 @@ or
 </html>"
 (mapcar
   (lambda (q)
-    (format nil "<option value=\"~a\">(~a) ~a</option>"
-	    (question-id q) (question-id q) (question-text q)))
+    (format nil "<option value=\"~a\">(~a) ~a~@[ (scene: ~a)~]</option>"
+	    (question-id q) (question-id q) (question-text q)
+	    (question-scene-id q)))
   (remove-if-not #'question-scene-id *questions*))
 (mapcar
   (lambda (s)
