@@ -58,6 +58,33 @@
 			'(ONT::have-property ONT::appears-to-have-property)))
 	    (lf-to-query-node (traverse-only-edge n :formal lfg)
 			      qg lfg visited))
+	  ;; to/on the left/right [of something]
+	  ((and (eq ont-type 'ONT::at-loc-relative)
+		(has-edge n :figure lfg)
+		(has-edge n :ground lfg)
+		(let* ((ground (traverse-only-edge n :ground lfg))
+		       (ground-type
+			 (nth-value 1 (destructure-lf-node-label ground lfg))))
+		  (direction-p ground-type)))
+	    (let* ((source (traverse-only-edge n :figure lfg))
+		   (dir (traverse-only-edge n :ground lfg))
+		   (dir-ont-type (nth-value 1
+		     (destructure-lf-node-label dir lfg))))
+	      (lf-to-query-node source qg lfg visited)
+	      (cond
+		((has-edge dir :figure lfg) ; "of" some specific thing
+		  (let ((target (traverse-only-edge dir :figure lfg)))
+		    (lf-to-query-node target qg lfg visited)
+		    (imitate-edge qg lfg source dir-ont-type target)
+		    ))
+		(t ; no "of"
+		  ;; add a fake node for "something"
+		  (let ((target (gentemp "V" :ont)))
+		    (add-node qg target 'ONT::referential-sem)
+		    (add-edge qg n dir-ont-type target)
+		    ))
+		)
+	      ))
 	  ;; scale value
 	  ((and (eq ont-type 'ONT::at-scale-value)
 		(has-edge n :scale lfg)
@@ -218,11 +245,8 @@
 		(imitate-node qg lfg n)
 		(cond
 		  ((direction-p ground-type) ; on/to the left/right
-		    ;; use ground as relation and add dummy target
-		    (let ((target (gentemp "V" :ont)))
-		      (add-node qg target 'ONT::referential-sem)
-		      (add-edge qg n ground-type target)
-		      ))
+		    ;; use same handling as non-:location usage
+		    (lf-to-query-node location qg lfg visited))
 		  (t ; not left/right, use ground as target
 		    (let ((location-type (second (label location lfg))))
 		      (imitate-node qg lfg ground)
