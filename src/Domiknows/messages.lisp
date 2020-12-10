@@ -45,24 +45,27 @@
   #'handle-display-query
   :subscribe t)
 
-(defun generate-answer (qg sg answer-id)
-  "Generate a text answer to the question given the query graph, the scene it
-   was asked about and an answer-id which is t, nil, or a node in the scene
+(defun generate-answer (q sg answer-id)
+    (declare (type query q) (type scene-graph sg))
+  "Generate a text answer to the question given the query, the scene it was
+   asked about and an answer-id which is t, nil, or a node in the scene
    graph."
-  (if (query-graph-focus qg)
-    ; wh question
-    (if answer-id
-      (string-downcase (symbol-name (third (label answer-id sg))))
-      "I don't know")
+  (if (eq (query-mode q) :yn)
     ; yes-no question
     (if answer-id "yes" "no")
+    ; wh question (roughly)
+    (if answer-id
+      ; NOTE: this works for a node or an edge, both labeled with (:* ont w)
+      (string-downcase (symbol-name (third (label answer-id sg))))
+      "I don't know")
     ))
 
-(declaim (ftype (function (question query-graph t string) t) handle-sentence-lfs-for-web))
+(declaim (ftype (function (question query string) t) handle-sentence-lfs-for-web))
 
 (defun handle-sentence-lfs (msg args)
   "Receive a sentence-lfs message from IM, and if it's from a question we know
    about, convert it to an lf-graph and store it in the question object."
+  ;(sleep 5) ; DEBUG (so trace messages don't overlap with KQML)
   (let* ((sentence (find-arg args :content))
 	 (uttnum (find-arg-in-act sentence :uttnum))
 	 (lf-terms (find-arg-in-act sentence :terms))
@@ -76,12 +79,13 @@
 		      (dfc::indicate-error *component* err orig-request))))
 	  (let* ((orig-request-verb
 		   (car (find-arg-in-act orig-request :content)))
-		 (qg (lf-to-query-graph lf-terms))
+		 (q (lf-to-query lf-terms))
 		 (scene-id (question-scene-id question))
-		 (dot (with-output-to-string (s) (write-dot s qg))))
+		 (dot (with-output-to-string (s)
+			(write-dot-clusters s (query-graphs q)))))
 	    (when (eq 'http orig-request-verb)
 	      (return-from handle-sentence-lfs
-		(handle-sentence-lfs-for-web question qg scene-id dot)))
+		(handle-sentence-lfs-for-web question q dot)))
 	    ;; display query graph
 	    (send-msg `(tell :content (lf-graph
 		:uttnum ,(question-id question)
@@ -92,8 +96,8 @@
 		(error "question has no scene, can't answer it"))
 	      ;; run query
 	      (let* ((sg (find scene-id *scenes* :key #'scene-graph-id))
-		     (answer-id (query-scene qg sg))
-		     (answer-text (generate-answer qg sg answer-id))
+		     (answer-id (query-scene q sg))
+		     (answer-text (generate-answer q sg answer-id))
 		     )
 		;; reply with answer
 		(reply-to-msg (question-request question) 'tell :content

@@ -116,7 +116,7 @@ or
 </body>
 </html>" (escape-for-xml dot)))))
 
-(defun handle-sentence-lfs-for-web (question qg scene-id dot)
+(defun handle-sentence-lfs-for-web (question q dot)
   (let* ((orig-request (question-request question))
 	 (query (find-arg-in-act (find-arg-in-act orig-request :content) :query))
 	 (op (intern (string-upcase (find-arg query :op)) :keyword))
@@ -125,8 +125,8 @@ or
       (:display-query-graph
 	(reply-with-dot orig-request dot))
       (:answer-question
-	(let* ((answer-id (query-scene qg scene))
-	       (answer-text (generate-answer qg scene answer-id)))
+	(let* ((answer-id (query-scene q scene))
+	       (answer-text (generate-answer q scene answer-id)))
 	  (reply-to-msg orig-request 'tell :content
 	    `(http 200 :content-type "text/html" :charset "UTF-8"
 		   :content ,(format nil "<!DOCTYPE html>

@@ -107,7 +107,7 @@
 	)
   )
 
-(defun query-scene (qg sg)
+(defun match-graphs (qg sg)
     (declare (type query-graph qg) (type scene-graph sg))
   "Match a query graph to a scene graph, and return the scene graph node
    corresponding to the focus of the query, if any. If the query has no focus
@@ -125,7 +125,7 @@
         for bindings = (match-nodes qn qg sn sg nil)
 	;; if there's a match, return immediately
 	when bindings
-        do (return-from query-scene
+        do (return
 	     (if qfocus
 	       (cdr (assoc qfocus bindings)) ; wh-question, return focus
 	       t ; yes/no question, return t
@@ -133,3 +133,24 @@
 	;; no match found, return nil
 	finally (return nil)
 	))
+
+(defun query-scene (q sg)
+    (declare (type query q) (type scene-graph sg))
+  "Return the ID of the answer to the query in relation to the scene. Like
+   match-graphs, but this takes a query, not a query-graph."
+  (ecase (query-mode q)
+    ((:yn :wh) (match-graphs (car (query-graphs q)) sg))
+    (:mc
+      (let ((answer-ids
+	      (remove nil (mapcar (lambda (qg) (match-graphs qg sg))
+				  (query-graphs q)))))
+	(case (length answer-ids)
+	  (0
+	    (error "none of the options in a multiple-choice question matched"))
+	  (1
+	    (car answer-ids))
+	  (otherwise
+	    (error "multiple options in a multiple-choice question matched"))
+	  )))
+    ; TODO!!! :est
+    ))

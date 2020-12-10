@@ -18,6 +18,7 @@
 		    :components (
 		      "json"
 		      "graph"
+		      "lf-munging"
 		      "lf-to-query-graph"
 		      "match"
 		      "question"

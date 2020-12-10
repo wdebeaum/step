@@ -16,6 +16,7 @@
 ;;;
 
 (defun write-dot (s g)
+  "Write a single graph g as a Graphviz dot file to the stream s."
   (let ((*print-pretty* nil))
     (format s "digraph ~a {~%"
 	    (typecase g
@@ -33,8 +34,43 @@
 		",color=green"
 		"")))
     (dolist (e (edges g))
-      (format s "  \"~a\" -> \"~a\" [label=<~s>]~%"
-	      (source e g) (target e g) (label e g)))
+      (format s "  \"~a\" -> \"~a\" [label=<~s>~a]~%"
+	      (source e g) (target e g) (label e g)
+	      (if (and (typep g 'query-graph)
+		       (equalp e (query-graph-focus g)))
+		",color=green"
+		"")))
+    (format s "}~%")
+    ))
+
+(defun write-dot-clusters (s gs)
+  "Write multiple graphs gs as a Graphviz dot file, with each graph in a
+   separate cluster, to the stream s. Fall back on write-dot if there is only
+   one graph."
+  (when (= 1 (length gs))
+    (return-from write-dot-clusters (write-dot s (car gs))))
+  (let ((*print-pretty* nil))
+    (format s "digraph Clusters {~%")
+    (loop for g in gs for i upfrom 0 do
+      (format s "  subgraph cluster~s {~%" i)
+      (dolist (n (nodes g))
+	(format s "    \"C~s_~a\" [label=<~s>~a]~%"
+		i
+		n
+		(label n g)
+		(if (and (typep g 'query-graph)
+			 (eq n (query-graph-focus g)))
+		  ",color=green"
+		  "")))
+      (dolist (e (edges g))
+	(format s "    \"C~s_~a\" -> \"C~s_~a\" [label=<~s>~a]~%"
+		i (source e g) i (target e g) (label e g)
+		(if (and (typep g 'query-graph)
+		       (equalp e (query-graph-focus g)))
+		  ",color=green"
+		  "")))
+      (format s "  }~%")
+      )
     (format s "}~%")
     ))
 
@@ -68,24 +104,13 @@
   terms
   )
 
-(defun add-terms-for-values (lf-terms)
-  "Given a list of lf-terms, return a copy that has extra terms replacing
-   argument values that were previously inline in other terms, particularly
-   :scale."
-  (loop for old-term in lf-terms
-	for scale-pos = (position :scale old-term) ; TODO? other args
-	append
-    (if scale-pos
-      (let ((id (gentemp "V" :ont))
-	    (val-pos (1+ scale-pos)))
-	`((nil ,id ,(nth val-pos old-term))
-	  (,@(subseq old-term 0 val-pos) ,id ,@(subseq old-term (1+ val-pos)))
-	  ))
-      (list old-term))))
-
 (defun find-lf-term (n g)
     (declare (type symbol n) (type lf-graph g))
   (find n (lf-graph-terms g) :key #'second))
+
+(defun speechact-node (g)
+    (declare (type lf-graph g))
+  (find 'ONT::speechact (nodes g) :key (lambda (n) (car (label n g)))))
 
 (defmethod nodes ((g lf-graph))
   (mapcar #'second (lf-graph-terms g)))
@@ -331,22 +356,43 @@
 
 (defun add-node (graph id label)
     (declare (type query-graph graph) (type symbol id))
+  "Add a node in graph with the given id and label unless a node with that id
+   already exists. Return id."
   (unless (assoc id (query-graph-nodes graph))
-    (push (list id label) (query-graph-nodes graph))))
+    (push (list id label) (query-graph-nodes graph)))
+  id)
 
 (defun add-edge (graph source label target)
     (declare (type query-graph graph) (type symbol source target))
-  (push (list source label target) (query-graph-edges graph)))
+  "Add an edge in graph from source labeled label to target. Return the edge."
+  (let ((edge (list source label target)))
+    (push edge (query-graph-edges graph))
+    edge))
 
 (defun imitate-node (dst-graph src-graph id)
     (declare (type query-graph dst-graph) (type symbol id))
+  "Add a node in dst-graph that has the same label and id as the id'd node in
+   src-graph (unless the node already exists in dst-graph). Return id."
   (add-node dst-graph id (second (label id src-graph)))) ; ignore indicator
 
 (defun imitate-edge (dst-graph src-graph source label target)
     (declare (type query-graph dst-graph) (type symbol source target))
+  "Add an edge in dst-graph specified by source/label/target, and imitate the
+   source and target nodes from src-graph. Return the edge."
   (imitate-node dst-graph src-graph source)
   (imitate-node dst-graph src-graph target)
   (add-edge dst-graph source label target)
+  )
+
+(defun update-query-graph (dst-qg src-qg)
+    (declare (type query-graph dst-qg src-qg))
+  "Add any nodes and edges from src-qg to dst-qg that weren't already there."
+  (setf (query-graph-nodes dst-qg)
+	(union (query-graph-nodes dst-qg) (query-graph-nodes src-qg)
+	       :key #'car))
+  (setf (query-graph-edges dst-qg)
+	(union (query-graph-nodes dst-qg) (query-graph-nodes src-qg)
+	       :test #'equalp))
   )
 
 ;;; displaying query graphs as lf-like lists
@@ -355,7 +401,12 @@
   (loop with terms = (mapcar #'copy-list (query-graph-nodes g))
 	with focus = (query-graph-focus g)
 	for (source label target) in (query-graph-edges g)
-	for source-term = (assoc source terms)
+	for source-term =
+	  (let ((st (assoc source terms)))
+	    (unless st ; the source term is missing, add a dummy term for it
+	      (setf st (list source '???))
+	      (push st terms))
+	    st)
 	do (push target (cddr source-term))
 	   (push label (cddr source-term))
 	finally
