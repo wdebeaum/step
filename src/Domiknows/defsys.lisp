@@ -18,8 +18,10 @@
 		    :components (
 		      "json"
 		      "graph"
+		      "parse-and-wait"
 		      "lf-munging"
 		      "lf-to-query-graph"
+		      "add-types-to-scene"
 		      "match"
 		      "question"
 		      "messages"

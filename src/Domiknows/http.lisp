@@ -166,6 +166,7 @@ answer-id
 ))))))))
 
 (defun handle-http-request (msg args)
+  ;(sleep 5) ; DEBUG (so trace messages don't overlap with KQML)
   (destructuring-bind (request-method request-uri &key query) args
       (declare (ignore request-method))
     (let* ((slash-pos (position #\/ request-uri :from-end t))
@@ -201,7 +202,9 @@ answer-id
 	(when (member op '(:display-scene-graph :answer-question))
 	  (cond
 	    ((string= "custom" scene-id)
-	      (setf scene (first (read-scene-graphs-from-json-string scene-json))))
+	      (setf scene (first (read-scene-graphs-from-json-string scene-json)))
+	      (add-types-to-scene scene)
+	      )
 	    (t
 	      (when (string= "from-question" scene-id)
 		(setf scene-id (question-scene-id question))

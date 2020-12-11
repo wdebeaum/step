@@ -131,6 +131,5 @@ graphs and answering questions. The accepted parameters are:
       }
 
     Note that if this isn't already augmented with TRIPS ONT types, Domiknows
-    will not currently add them in (though this may change in the future).
-    Instead, the types will all be NIL. You can still display such a scene
-    graph, but it's not likely to be useful for answering questions.
+    will try to add them in. This involves parsing many sentences derived from
+    parts of the scene graph, so it might take a few seconds.

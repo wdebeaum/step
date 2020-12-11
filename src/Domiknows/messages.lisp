@@ -62,6 +62,7 @@
 
 (declaim (ftype (function (question query string) t) handle-sentence-lfs-for-web))
 
+;; TODO get rid of this and use synchronous parse-and-wait instead
 (defun handle-sentence-lfs (msg args)
   "Receive a sentence-lfs message from IM, and if it's from a question we know
    about, convert it to an lf-graph and store it in the question object."
@@ -112,4 +113,15 @@
 (defcomponent-handler
   '(tell &key :content (sentence-lfs . *))
   #'handle-sentence-lfs
+  :subscribe t)
+
+;; these handlers are just here so that we subscribe to the messages that
+;; parse-and-wait needs to hear
+(defcomponent-handler
+  '(tell &key :content (new-speech-act-hyps . *))
+  (lambda (msg args) nil)
+  :subscribe t)
+(defcomponent-handler
+  '(tell &key :content (failed-to-parse . *))
+  (lambda (msg args) nil)
   :subscribe t)

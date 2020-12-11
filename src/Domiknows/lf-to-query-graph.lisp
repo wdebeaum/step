@@ -29,6 +29,9 @@
 	(destructure-complex-type (second label))
       (values indicator ont-type word))))
 
+(defun lf-node-type (n lfg)
+  (nth-value 1 (destructure-lf-node-label n lfg)))
+
 (defun adj-p (ont-type)
   "Is the given ONT type used for adjectives?"
   (om::is-sublf ont-type 'ONT::property-val))
@@ -67,12 +70,11 @@
 		(has-edge n :ground lfg)
 		(let* ((ground (traverse-only-edge n :ground lfg))
 		       (ground-type
-			 (nth-value 1 (destructure-lf-node-label ground lfg))))
+			 (lf-node-type ground lfg)))
 		  (direction-p ground-type)))
 	    (let* ((source (traverse-only-edge n :figure lfg))
 		   (dir (traverse-only-edge n :ground lfg))
-		   (dir-ont-type (nth-value 1
-		     (destructure-lf-node-label dir lfg))))
+		   (dir-ont-type (lf-node-type dir lfg)))
 	      (lf-to-query-node source qg lfg visited)
 	      (setf (gethash n visited)
 		(cond
@@ -251,7 +253,7 @@
 	    (when (has-edge location :ground lfg)
 	      (let* ((ground (traverse-only-edge location :ground lfg))
 		     (ground-type
-		       (nth-value 1 (destructure-lf-node-label ground lfg))))
+		       (lf-node-type ground lfg)))
 		(imitate-node qg lfg n)
 		(cond
 		  ((direction-p ground-type) ; on/to the left/right

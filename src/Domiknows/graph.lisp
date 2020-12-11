@@ -96,6 +96,15 @@
 (defun has-edge (source label graph)
   (member label (out-edges source graph) :key (lambda (e) (label e graph))))
 
+(defun maybe-traverse-path (source path graph)
+  "Attempt to traverse multiple edges in sequence. Return the node at the end
+   of the path, or NIL if any traversal failed or resulted in multiple nodes."
+  (if path
+    (let ((mids (traverse-edge source (car path) graph)))
+      (when (= 1 (length mids))
+	(maybe-traverse-path (car mids) (cdr path) graph)))
+    source))
+
 ;;;
 ;;; TRIPS LF Graph
 ;;;
@@ -256,6 +265,22 @@
       )
     ))
 
+(defun word-string-to-symbols (word-str)
+  "Convert a word or words in a string like \"foo bar\" to a symbol or list of
+   symbols like (W::foo W::bar)."
+  (let* ((strs (util:split-string word-str))
+	 (syms (loop for w in strs collect (intern (string-upcase w) :w))))
+    (if (> (length syms) 1)
+      syms
+      (car syms))))
+
+(defun word-symbols-to-string (word-syms)
+  "Rough inverse of word-string-to-symbols."
+  (if (consp word-syms)
+    (format nil "~(~{~a~^ ~}~)" word-syms)
+    (string-downcase (symbol-name word-syms))
+    ))
+
 (defun scene-sexp-to-graphs (raw-sgs)
   ;; for each scene
   (loop for sgs-tail = raw-sgs then (cddr sgs-tail)
@@ -276,7 +301,7 @@
 	;; for each relation from the object
 	(loop for raw-reln in (second (member :relations object-desc))
 	      for target = (parse-integer (second (member :object raw-reln)))
-	      for name = (second (member :name raw-reln)) ; TODO W::... except what about multiwords?
+	      for name = (word-string-to-symbols (second (member :name raw-reln)))
 	      for type = (read-type-from-scene-graph raw-reln)
 	      for reln =
 		(make-scene-graph-reln :name name :type type :target target)
@@ -285,13 +310,13 @@
 	;; for each attribute of the object
 	(loop for raw-attr in (second (member :attributes object-desc))
 	      for name =
-	        (intern (string-upcase
-			  (etypecase raw-attr
-			    (list
-			      (second (member :name raw-attr)))
-			    (string
-			      raw-attr)
-			    )) :w)
+	        (word-string-to-symbols
+		    (etypecase raw-attr
+		      (list
+			(second (member :name raw-attr)))
+		      (string
+			raw-attr)
+		      ))
 	      for type = (read-type-from-scene-graph raw-attr)
 	      for attr = (make-scene-graph-attr :name name :type type)
 	      do (push attr attrs)
@@ -299,7 +324,7 @@
 	      )
 	;; make the structure for the object
 	(push (make-scene-graph-object
-		  :name (intern (string-upcase (second (member :name object-desc))) :w)
+		  :name (word-string-to-symbols (second (member :name object-desc)))
 		  :type (read-type-from-scene-graph object-desc)
 		  :id object-id
 		  :relns (nreverse relns)
