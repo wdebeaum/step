@@ -1,7 +1,10 @@
 (in-package :domiknows)
 
 (defun subtype-member (descendant-type acceptable-ancestor-types)
-  (member descendant-type acceptable-ancestor-types
+  (member (if (consp descendant-type)
+	    (car descendant-type)
+	    descendant-type)
+	  acceptable-ancestor-types
 	  :test #'om::is-sublf))
 
 (defun first-type-under (ont-type-options acceptable-ancestor-types)
@@ -10,10 +13,17 @@
       (subtype-member descendant-type acceptable-ancestor-types))
     ont-type-options))
 
+(defun ensure-list (x)
+  (if (consp x) x (list x)))
+
 (defun word-senses (word &key pos)
   "Return the list of ONT types for the senses of the given word (as a W::
    symbol or list thereof) in the given part of speech."
-  (mapcar #'car (lxm::get-lf word :pos pos)))
+  ;; NOTE: making sure the word is a list when we pass it to get-lf prevents it
+  ;; from matching a multiword when we give it only the first word, e.g.
+  ;; (get-lf 'w::hand) gets ONT::device because of "hand held", but (get-lf
+  ;; '(w::hand)) does not.
+  (mapcar #'car (lxm::get-lf (ensure-list word) :pos pos)))
 
 (defun first-sense-under (word acceptable-ancestor-types &key pos)
   "Return the ONT type for the first sense of the given word in the given part
@@ -33,18 +43,14 @@
 	 (terms (hyp-lf-terms hyp))
 	 (lfg (make-lf-graph :terms (prepare-lf-terms-for-graph terms)))
 	 (content (content-or-root root lfg))
-	 )
-    (lf-node-type content lfg)))
-
-(defun get-object-type-under (obj acceptable-ont-types)
-    (declare (type scene-graph-object obj) (type list acceptable-ont-types))
-  (let ((obj-name (scene-graph-part-name obj)))
-    (or
-      ;; first, try just looking up the object name
-      (first-sense-under obj-name acceptable-ont-types :pos 'W::N)
-      ;; if that's not acceptable, try parsing "The <attr> <obj>." with one
-      ;; of the object's attributes, or just "The <obj>." if it has none.
-      )))
+	 (obj-type (lf-node-type content lfg)))
+    ;; add any :assoc-with edges
+    (if (has-edge content :assoc-with lfg)
+      (cons obj-type
+	    (loop for target in (traverse-edge content :assoc-with lfg)
+		  for target-type = (lf-node-type target lfg)
+		  append (list :assoc-with target-type)))
+      obj-type)))
 
 (defun add-type-to-object (obj)
     (declare (type scene-graph-object obj))
@@ -57,10 +63,13 @@
 	 (parsed-types
 	   (unless preferred-looked-up-type ; avoid parsing if we have answer
 	     (loop with attr = (car (scene-graph-object-attrs obj))
-		   with attr-name = (if attr (scene-graph-part-name attr) "")
+		   with attr-name =
+		     (if attr
+		       (word-symbols-to-string (scene-graph-part-name attr))
+		       "")
 		   with utt-text =
 		     (format nil "The ~a ~a."
-			     (word-symbols-to-string attr-name)
+			     attr-name
 			     (word-symbols-to-string obj-name))
 		   ; TODO? set parser options to favor NPs?
 		   with hyps = (parse-and-wait utt-text)
@@ -75,6 +84,7 @@
 	(first-type-under parsed-types preferred-supertypes)
 	(first-type-under looked-up-types fallback-supertypes)
 	(first-type-under parsed-types fallback-supertypes)
+	'ONT::referential-sem
 	))))
 
 (defun get-reln-type-from-hyp (hyp)
@@ -116,7 +126,7 @@
     (dolist (edge-label '(:location :source :result))
       (when (has-edge content edge-label lfg)
 	(let* ((target-node (traverse-only-edge content edge-label lfg))
-	       (target-type (lf-node-type target-node))
+	       (target-type (lf-node-type target-node lfg))
 	       ;; convert :result to :location since they overlap
 	       (edge-label2 (if (eq :result edge-label) :location edge-label)))
 	  (setf ont-type
