@@ -146,11 +146,13 @@
 				  (query-graphs q)))))
 	(case (length answer-ids)
 	  (0
-	    (error "none of the options in a multiple-choice question matched"))
+	    ;(error "none of the options in a multiple-choice question matched")
+	    nil)
 	  (1
 	    (car answer-ids))
 	  (otherwise
-	    (error "multiple options in a multiple-choice question matched"))
+	    ;(error "multiple options in a multiple-choice question matched")
+	    nil)
 	  )))
     ; TODO!!! :est
     ))

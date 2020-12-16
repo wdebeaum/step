@@ -73,9 +73,10 @@ or
   (lambda (s)
     (format nil "<option value=\"~a\">(~a) ~(~{~{~a×~a~}~^, ~}~)...</option>"
 	    (scene-graph-id s) (scene-graph-id s)
-	    (take 5
+	    (take 4
 	      (count-dupes
-		(mapcar (lambda (o) (symbol-name (scene-graph-object-name o)))
+		(mapcar (lambda (o)
+			  (word-symbols-to-string (scene-graph-object-name o)))
 			(scene-graph-objects s))))
 	    ))
   *scenes*)
@@ -116,20 +117,11 @@ or
 </body>
 </html>" (escape-for-xml dot)))))
 
-(defun handle-sentence-lfs-for-web (question q dot)
-  (let* ((orig-request (question-request question))
-	 (query (find-arg-in-act (find-arg-in-act orig-request :content) :query))
-	 (op (intern (string-upcase (find-arg query :op)) :keyword))
-	 (scene (find-arg query :scene)))
-    (ecase op
-      (:display-query-graph
-	(reply-with-dot orig-request dot))
-      (:answer-question
-	(let* ((answer-id (query-scene q scene))
-	       (answer-text (generate-answer q scene answer-id)))
-	  (reply-to-msg orig-request 'tell :content
-	    `(http 200 :content-type "text/html" :charset "UTF-8"
-		   :content ,(format nil "<!DOCTYPE html>
+(defun handle-http-answer-question (msg question query query-dot scene scene-dot)
+  (multiple-value-bind (answer-id answer-text) (answer-query query scene)
+    (reply-to-msg msg 'tell :content
+      `(http 200 :content-type "text/html" :charset "UTF-8"
+	     :content ,(format nil "<!DOCTYPE html>
 <html>
 <head>
 <meta charset=\"UTF-8\">
@@ -161,17 +153,16 @@ answer-id
 	  (if (string-equal answer-text (question-reference-answer question))
 	    "YES" "NO"))
   "")
-(escape-for-xml dot)
-(escape-for-xml (with-output-to-string (s) (write-dot s scene)))
-))))))))
+(escape-for-xml query-dot)
+(escape-for-xml scene-dot)
+)))))
 
 (defun handle-http-request (msg args)
-  ;(sleep 5) ; DEBUG (so trace messages don't overlap with KQML)
   (destructuring-bind (request-method request-uri &key query) args
       (declare (ignore request-method))
     (let* ((slash-pos (position #\/ request-uri :from-end t))
 	   (uri-basename (if slash-pos (subseq request-uri (1+ slash-pos)) request-uri))
-	   question scene)
+	   question scene q q-dot scene-dot)
       (unless (string= uri-basename "domiknows") ; only handle our requests
 	(return-from handle-http-request nil))
       (destructuring-bind (&key op (question-id "custom") (question-text "")
@@ -184,21 +175,18 @@ answer-id
 	    ((string= "custom" question-id)
 	      (unless (find-if #'alphanumericp question-text)
 		(error "missing or blank question text"))
-	      (setf question (make-question
-			       :id 1 ; TODO!!!
-			       :text question-text
-			       :reference-answer nil
-			       :scene-id nil
-			       :request msg))
-	      (push question *questions*))
+	      (setf question (add-temp-question question-text))
+	      )
 	    (t
 	      (setf question-id (parse-integer question-id))
 	      (setf question (find question-id *questions* :key #'question-id))
 	      (unless question
 		(error "unknown question-id ~a" question-id))
-	      (setf (question-request question) msg)
 	      )
-	    ))
+	    )
+	  (multiple-value-setq (q q-dot)
+	      (question-to-query-and-dot question))
+	  )
 	(when (member op '(:display-scene-graph :answer-question))
 	  (cond
 	    ((string= "custom" scene-id)
@@ -217,19 +205,22 @@ answer-id
 	      (unless scene
 		(error "unknown scene-id ~a" scene-id))
 	      )
-	    ))
+	    )
+	  (setf scene-dot (with-output-to-string (s) (write-dot s scene)))
+	  )
+	(format t "domiknows http op = ~s~%" op)
 	(case op
 	  (:display-query-graph
-	    (parse-question question))
+	    (reply-with-dot msg q-dot))
 	  (:display-scene-graph
-	    (reply-with-dot msg (with-output-to-string (s) (write-dot s scene))))
+	    (reply-with-dot msg scene-dot))
 	  (:answer-question
-	    (setf (second (member :query args))
-		  `(:scene ,scene ,@query)) ; FIXME ick.
-	    (parse-question question))
+	    (handle-http-answer-question msg question q q-dot scene scene-dot))
 	  (otherwise
 	    (reply-to-msg msg 'tell :content `(http 200 :content-type "text/html" :charset "UTF-8" :content ,(html-form))))
-	  )))))
+	  ))
+      (when question (remove-temp-question question))
+      )))
 (defcomponent-handler
   '(request &key :content (http . *))
   #'handle-http-request

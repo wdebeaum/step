@@ -1,44 +1,68 @@
 (in-package :domiknows)
 
-(defun parse-question (question)
-  "Send the question to the Parser to be parsed. Returns immediately without
-   waiting for results."
-  (with-slots (id text) question
-    (send-msg `(tell :content
-      (utterance :text ,text :uttnum ,id :direction input :channel desktop)))))
+(defvar *temp-question-id* 9999) 
 
-(defun handle-answer-question (msg args)
-  (let* ((question-id (find-arg args :id))
-	 (question (find question-id *questions* :key #'question-id)))
-    (unless question
-      (error "unknown question id ~s" question-id))
-    (setf (question-request question) msg)
-    (parse-question question)
-    ))
+(defun add-temp-question (question-text)
+  (let ((question (make-question
+		    :id *temp-question-id*
+		    :text question-text
+		    :reference-answer nil
+		    :scene-id nil
+		    )))
+    (push question *questions*)
+    question))
 
-(defcomponent-handler
-  '(request &key :content (answer-question . *))
-  #'handle-answer-question
-  :subscribe t)
+(defun remove-temp-question (question)
+  "Remove question from *questions* if it was only temporary."
+  (when (= (question-id question) *temp-question-id*)
+    (pop *questions*)))
 
-(defun handle-display-query (msg args)
+(defun lookup-question (args)
+  "Given the args from an answer-question or display-query request, return the
+   relevant question structure (maybe creating a temporary one)."
   (let* ((question-id (find-arg args :id))
 	 (question-text (find-arg args :text)))
     (cond
-      (question-id
-	(handle-answer-question msg args))
+      (question-id t)
       (question-text
-	(let ((question (make-question
-			  :id 1 ; TODO?
-			  :text question-text
-			  :reference-answer nil
-			  :scene-id nil
-			  :request msg)))
-	  (push question *questions*)
-	  (parse-question question)
-	  ))
+	(setf question-id *temp-question-id*)
+	(add-temp-question question-text)
+	)
       (t (error "expected either :id or :text in display-query request"))
-      )))
+      )
+    (or (find question-id *questions* :key #'question-id)
+	(error "unknown question id ~s" question-id))))
+
+(defun lookup-scene-graph (question)
+  (let ((scene-id (or (question-scene-id question)
+		      (error "question has no scene, can't answer it"))))
+    (or (find scene-id *scenes* :key #'scene-graph-id)
+	(error "unknown scene id ~s" scene-id))))
+
+(defun question-to-query-and-dot (question)
+  "Handle the parts common to handling answer-question and display-query (KQML
+   and HTTP versions). Take a question, parse it, make the query graphs, and
+   make the dot graph from them. Return the query structure and the dot graph
+   as multiple values."
+  (let* ((hyps (or (parse-and-wait (question-text question) :prefer 'question)
+		   (error "failed to parse question ~s" question)))
+	 (q (lf-to-query (hyp-lf-terms (car hyps))))
+	 (dot (with-output-to-string (s)
+		(write-dot-clusters s (query-graphs q))))
+	 )
+    (values q dot)))
+
+(defun question-to-dot (question)
+  (nth-value 1 (question-to-query-and-dot question)))
+
+(defun display-dot (dot)
+  (send-msg `(tell :content (lf-graph :content ,dot))))
+
+(defun handle-display-query (msg args)
+  (let ((question (lookup-question args)))
+    (display-dot (question-to-dot question))
+    (remove-temp-question question)
+    ))
 
 (defcomponent-handler
   '(request &key :content (display-query . *))
@@ -60,59 +84,33 @@
       "I don't know")
     ))
 
-(declaim (ftype (function (question query string) t) handle-sentence-lfs-for-web))
+(defun answer-query (q sg)
+  "Apply the query to the scene and return the answer ID and text as multiple
+   values."
+  (let* ((answer-id (query-scene q sg))
+	 (answer-text (generate-answer q sg answer-id)))
+    (values answer-id answer-text)))
 
-;; TODO get rid of this and use synchronous parse-and-wait instead
-(defun handle-sentence-lfs (msg args)
-  "Receive a sentence-lfs message from IM, and if it's from a question we know
-   about, convert it to an lf-graph and store it in the question object."
-  ;(sleep 5) ; DEBUG (so trace messages don't overlap with KQML)
-  (let* ((sentence (find-arg args :content))
-	 (uttnum (find-arg-in-act sentence :uttnum))
-	 (lf-terms (find-arg-in-act sentence :terms))
-	 (question (find uttnum *questions* :key #'question-id))
-	 )
-    (when question ; this parse's uttnum matched a question we know about, therefore we must have sent that question to be parsed
-      (let ((orig-request (question-request question)))
-	(handler-bind
-	    ;; if there's an error, reply to orig-request, not sentence-lfs
-	    ((error (lambda (err)
-		      (dfc::indicate-error *component* err orig-request))))
-	  (let* ((orig-request-verb
-		   (car (find-arg-in-act orig-request :content)))
-		 (q (lf-to-query lf-terms))
-		 (scene-id (question-scene-id question))
-		 (dot (with-output-to-string (s)
-			(write-dot-clusters s (query-graphs q)))))
-	    (when (eq 'http orig-request-verb)
-	      (return-from handle-sentence-lfs
-		(handle-sentence-lfs-for-web question q dot)))
-	    ;; display query graph
-	    (send-msg `(tell :content (lf-graph
-		:uttnum ,(question-id question)
-		:content ,dot)))
-	    ;; answer the question if we were asked to
-	    (when (eq 'answer-question orig-request-verb)
-	      (unless scene-id
-		(error "question has no scene, can't answer it"))
-	      ;; run query
-	      (let* ((sg (find scene-id *scenes* :key #'scene-graph-id))
-		     (answer-id (query-scene q sg))
-		     (answer-text (generate-answer q sg answer-id))
-		     )
-		;; reply with answer
-		(reply-to-msg (question-request question) 'tell :content
-		  `(answer
-		    :id ,answer-id
-		    :text ,answer-text
-		    :correct-p
-		      ,(string-equal answer-text
-				     (question-reference-answer question))
-		    ))))))))))
+(defun handle-answer-question (msg args)
+  (let* ((question (lookup-question args))
+	 (sg (lookup-scene-graph question)))
+  (multiple-value-bind (q dot)
+      (question-to-query-and-dot question)
+    (display-dot dot)
+    (multiple-value-bind (answer-id answer-text) (answer-query q sg)
+      ;; reply with answer
+      (reply-to-msg msg 'tell :content
+	`(answer
+	  :id ,answer-id
+	  :text ,answer-text
+	  :correct-p
+	    ,(string-equal answer-text
+			   (question-reference-answer question))
+	  ))))))
 
 (defcomponent-handler
-  '(tell &key :content (sentence-lfs . *))
-  #'handle-sentence-lfs
+  '(request &key :content (answer-question . *))
+  #'handle-answer-question
   :subscribe t)
 
 ;; these handlers are just here so that we subscribe to the messages that

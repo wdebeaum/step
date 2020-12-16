@@ -1116,7 +1116,7 @@
         )
         :y 184
         :x 191
-        :type "cook-result"
+        :type "referential-sem"
       )
       :3620610 (
         :name "head"
@@ -2106,7 +2106,7 @@
         :attributes (
           (
             :name "green"
-            :type "food"
+            :type "green"
           )
           (
             :name "colorful"
@@ -2530,7 +2530,7 @@
         :attributes (
           (
             :name "black"
-            :type "thoroughfare"
+            :type "black"
           )
         )
         :y 27
@@ -5429,5 +5429,1567 @@
     )
     :location "outdoors"
     :height 272
+  )
+  :2380687 (
+    :width 500
+    :objects (
+      :1343663 (
+        :type "manufactured-object"
+        :name "collar"
+        :h 23
+        :relations (
+          (
+            :object "1343640"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343638"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 21
+        :attributes (
+          (
+            :name "black"
+            :type "black"
+          )
+        )
+        :y 123
+        :x 153
+      )
+      :1343660 (
+        :type "attire"
+        :name "shoe"
+        :h 39
+        :relations (
+          (
+            :object "1343653"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343652"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343637"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 47
+        :attributes ()
+        :y 192
+        :x 243
+      )
+      :1343661 (
+        :type "attire"
+        :name "shoes"
+        :h 38
+        :relations (
+          (
+            :object "1343653"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343637"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343652"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 122
+        :attributes ()
+        :y 192
+        :x 243
+      )
+      :1343665 (
+        :type "status"
+        :name "sidewalk"
+        :h 36
+        :relations ()
+        :w 496
+        :attributes (
+          (
+            :name "tan"
+            :type "status"
+          )
+        )
+        :y 174
+        :x 3
+      )
+      :1343644 (
+        :type "external-body-part"
+        :name "hair"
+        :h 43
+        :relations ()
+        :w 44
+        :attributes (
+          (
+            :name "dark"
+            :type "dark-in-color-val"
+          )
+        )
+        :y 5
+        :x 358
+      )
+      :1343641 (
+        :type "land-vehicle"
+        :name "skateboard"
+        :h 35
+        :relations (
+          (
+            :object "1343651"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343637"
+            :type "follow-something"
+            :name "followed by"
+          )
+        )
+        :w 233
+        :attributes (
+          (
+            :name "black"
+            :type "black"
+          )
+        )
+        :y 213
+        :x 186
+      )
+      :1343651 (
+        :type "external-body-part"
+        :name "leg"
+        :h 64
+        :relations (
+          (
+            :object "1343652"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343653"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343654"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343641"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 42
+        :attributes ()
+        :y 170
+        :x 24
+      )
+      :1343648 (
+        :type "attire"
+        :name "shirt"
+        :h 89
+        :relations ()
+        :w 120
+        :attributes (
+          (
+            :name "purple"
+            :type "purple"
+          )
+        )
+        :y 42
+        :x 260
+      )
+      :1343640 (
+        :type "attire"
+        :name "jeans"
+        :h 110
+        :relations (
+          (
+            :object "1343637"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343663"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343653"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343654"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 123
+        :attributes (
+          (
+            :name "blue"
+            :type "blue"
+          )
+        )
+        :y 102
+        :x 247
+      )
+      :1343659 (
+        :type "vehicle-part"
+        :name "wheel"
+        :h 13
+        :relations (
+          (
+            :object "1343658"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 14
+        :attributes (
+          (
+            :name "round"
+            :type "round-val"
+          )
+        )
+        :y 232
+        :x 376
+      )
+      :1343658 (
+        :type "vehicle-part"
+        :name "wheel"
+        :h 15
+        :relations (
+          (
+            :object "1343659"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 8
+        :attributes (
+          (
+            :name "round"
+            :type "round-val"
+          )
+        )
+        :y 231
+        :x 390
+      )
+      :1343637 (
+        :type "nonhuman-animal"
+        :name "dog"
+        :h 120
+        :relations (
+          (
+            :object "1343663"
+            :type "wear"
+            :name "wearing"
+          )
+          (
+            :object "1343641"
+            :type "follow-something"
+            :name "following"
+          )
+          (
+            :object "1343640"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343661"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343638"
+            :type "follow-something"
+            :name "following"
+          )
+          (
+            :object "1343660"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343638"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 198
+        :attributes (
+          (
+            :name "brown"
+            :type "brown"
+          )
+          (
+            :name "running"
+            :type "move-rapidly"
+          )
+        )
+        :y 112
+        :x 7
+      )
+      :1343638 (
+        :type "male-person"
+        :name "man"
+        :h 225
+        :relations (
+          (
+            :object "1343637"
+            :type "follow-something"
+            :name "followed by"
+          )
+          (
+            :object "1343641"
+            :type "on"
+            :name "on"
+          )
+          (
+            :object "1343641"
+            :type "ride"
+            :name "riding on"
+          )
+          (
+            :object "1343653"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343654"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343663"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343640"
+            :type "wear"
+            :name "wearing"
+          )
+          (
+            :object "1343652"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343637"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 164
+        :attributes (
+          (
+            :name "skateboarding"
+            :type "move"
+          )
+          (
+            :name "crouched"
+            :type "body-movement-self"
+          )
+          (
+            :name "crouching"
+            :type "body-movement-self"
+          )
+        )
+        :y 5
+        :x 240
+      )
+      :1343653 (
+        :type "external-body-part"
+        :name "leg"
+        :h 58
+        :relations (
+          (
+            :object "1343638"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343652"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343660"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343651"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343640"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343661"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 60
+        :attributes ()
+        :y 162
+        :x 145
+      )
+      :1343652 (
+        :type "external-body-part"
+        :name "leg"
+        :h 69
+        :relations (
+          (
+            :object "1343661"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343660"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343638"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343653"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343654"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343651"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 48
+        :attributes ()
+        :y 161
+        :x 71
+      )
+      :1343639 (
+        :type "object-dependent-location"
+        :name "tail"
+        :h 26
+        :relations ()
+        :w 45
+        :attributes (
+          (
+            :name "brown"
+            :type "brown"
+          )
+        )
+        :y 144
+        :x 7
+      )
+      :1343647 (
+        :type "road"
+        :name "road"
+        :h 113
+        :relations ()
+        :w 496
+        :attributes ()
+        :y 220
+        :x 1
+      )
+      :1343657 (
+        :type "vehicle-part"
+        :name "wheel"
+        :h 13
+        :relations (
+          (
+            :object "1343656"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 11
+        :attributes (
+          (
+            :name "round"
+            :type "round-val"
+          )
+        )
+        :y 230
+        :x 220
+      )
+      :1343656 (
+        :type "vehicle-part"
+        :name "wheel"
+        :h 15
+        :relations (
+          (
+            :object "1343657"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 13
+        :attributes (
+          (
+            :name "round"
+            :type "round-val"
+          )
+        )
+        :y 230
+        :x 210
+      )
+      :1343654 (
+        :type "external-body-part"
+        :name "leg"
+        :h 33
+        :relations (
+          (
+            :object "1343651"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343638"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1343652"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1343640"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 21
+        :attributes ()
+        :y 169
+        :x 135
+      )
+    )
+    :location "outdoors"
+    :height 333
+  )
+  :2341592 (
+    :width 500
+    :objects (
+      :3184060 (
+        :type "covering"
+        :name "armor"
+        :h 109
+        :relations (
+          (
+            :object "2736100"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 151
+        :attributes (
+          (
+            :name "white"
+            :type "white"
+          )
+        )
+        :y 222
+        :x 173
+      )
+      :2028054 (
+        :type "referential-sem"
+        :name "umbrella"
+        :h 283
+        :relations ()
+        :w 348
+        :attributes ()
+        :y 8
+        :x 109
+      )
+      :3654330 (
+        :type "material"
+        :name "paper"
+        :h 40
+        :relations ()
+        :w 36
+        :attributes (
+          (
+            :name "blue"
+            :type "blue"
+          )
+        )
+        :y 218
+        :x 168
+      )
+      :3135836 (
+        :type "donate-give"
+        :name "gift"
+        :h 122
+        :relations (
+          (
+            :object "2533568"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "2533569"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 90
+        :attributes ()
+        :y 159
+        :x 124
+      )
+      :2796077 (
+        :type "material"
+        :name "paper"
+        :h 106
+        :relations ()
+        :w 131
+        :attributes (
+          (
+            :name "yellow"
+            :type "yellow"
+          )
+        )
+        :y 49
+        :x 160
+      )
+      :2533569 (
+        :type "external-body-part"
+        :name "head"
+        :h 94
+        :relations (
+          (
+            :object "3135836"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2533568"
+            :type "assoc-with"
+            :name "of"
+          )
+        )
+        :w 73
+        :attributes ()
+        :y 123
+        :x 271
+      )
+      :2533568 (
+        :type "person"
+        :name "person"
+        :h 207
+        :relations (
+          (
+            :object "2028054"
+            :type "be-at-loc-_location-below"
+            :name "standing under"
+          )
+          (
+            :object "3184060"
+            :type "wear"
+            :name "wearing"
+          )
+          (
+            :object "3135836"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 235
+        :attributes ()
+        :y 124
+        :x 171
+      )
+      :2318356 (
+        :type "land"
+        :name "ground"
+        :h 44
+        :relations ()
+        :w 67
+        :attributes ()
+        :y 63
+        :x 248
+      )
+      :2736100 (
+        :type "external-body-part"
+        :name "arm"
+        :h 88
+        :relations (
+          (
+            :object "3184060"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 55
+        :attributes ()
+        :y 195
+        :x 353
+      )
+    )
+    :height 331
+  )
+  :2322797 (
+    :width 500
+    :objects (
+      :3211367 (
+        :type "person"
+        :name "person"
+        :h 117
+        :relations (
+          (
+            :object "3211368"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3211368"
+            :type "body-manipulation"
+            :name "holding"
+          )
+          (
+            :object "3039834"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3960322"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 397
+        :attributes ()
+        :y 0
+        :x 3
+      )
+      :3960319 (
+        :type "cheese"
+        :name "cheese"
+        :h 88
+        :relations (
+          (
+            :object "2708126"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3312670"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3039835"
+            :type "on"
+            :name "on"
+          )
+          (
+            :object "3382580"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3062955"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2708123"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3500881"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3444412"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 153
+        :attributes ()
+        :y 102
+        :x 345
+      )
+      :3382579 (
+        :type "meat"
+        :name "meat"
+        :h 60
+        :relations (
+          (
+            :object "3039835"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 200
+        :attributes ()
+        :y 192
+        :x 2
+      )
+      :3062955 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 24
+        :relations (
+          (
+            :object "3960317"
+            :type "be-at-loc-_location-on"
+            :name "lying on top of"
+          )
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "2907444"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3254432"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 47
+        :attributes ()
+        :y 155
+        :x 298
+      )
+      :3046915 (
+        :type "fast-food"
+        :name "pizza"
+        :h 132
+        :relations ()
+        :w 299
+        :attributes ()
+        :y 173
+        :x 7
+      )
+      :3960317 (
+        :type "cheese"
+        :name "cheese"
+        :h 74
+        :relations (
+          (
+            :object "3444412"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3500881"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 43
+        :attributes ()
+        :y 67
+        :x 179
+      )
+      :2907444 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 32
+        :relations (
+          (
+            :object "3312670"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3254432"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "2708123"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3382580"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3062955"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3960322"
+            :type "be-at-loc-_location-on"
+            :name "lying on top of"
+          )
+        )
+        :w 40
+        :attributes ()
+        :y 148
+        :x 350
+      )
+      :3382580 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 25
+        :relations (
+          (
+            :object "3254432"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "2907444"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3312670"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 50
+        :attributes ()
+        :y 142
+        :x 227
+      )
+      :3444412 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 22
+        :relations (
+          (
+            :object "3960317"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3312668"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 40
+        :attributes ()
+        :y 127
+        :x 323
+      )
+      :3254432 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 30
+        :relations (
+          (
+            :object "2708123"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3382580"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3312670"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2907444"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3062955"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3960319"
+            :type "be-at-loc-_location-on"
+            :name "lying on top of"
+          )
+          (
+            :object "3312668"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 38
+        :attributes ()
+        :y 145
+        :x 375
+      )
+      :2708123 (
+        :type "sheet-_assoc-with-fast-food"
+        :name "pizza slice"
+        :h 63
+        :relations (
+          (
+            :object "2907444"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3312668"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3254432"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 226
+        :attributes ()
+        :y 132
+        :x 129
+      )
+      :3500881 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 20
+        :relations (
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3960317"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 42
+        :attributes (
+          (
+            :name "small"
+            :type "small"
+          )
+        )
+        :y 94
+        :x 214
+      )
+      :3039835 (
+        :type "fast-food"
+        :name "pizza"
+        :h 166
+        :relations (
+          (
+            :object "3359722"
+            :type "on"
+            :name "on"
+          )
+          (
+            :object "3960319"
+            :type "assoc-with"
+            :name "with"
+          )
+          (
+            :object "3382579"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 370
+        :attributes (
+          (
+            :name "large"
+            :type "large"
+          )
+        )
+        :y 64
+        :x 129
+      )
+      :3211368 (
+        :type "cookware"
+        :name "spatula"
+        :h 59
+        :relations (
+          (
+            :object "3211367"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 112
+        :attributes ()
+        :y 0
+        :x 386
+      )
+      :3359722 (
+        :type "table"
+        :name "counter"
+        :h 275
+        :relations ()
+        :w 495
+        :attributes ()
+        :y 53
+        :x 2
+      )
+      :3960322 (
+        :type "cheese"
+        :name "cheese"
+        :h 22
+        :relations (
+          (
+            :object "3211367"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 138
+        :attributes ()
+        :y 61
+        :x 359
+      )
+      :3312668 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 15
+        :relations (
+          (
+            :object "3444412"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3312670"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2708123"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2708126"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3254432"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3960322"
+            :type "be-at-loc-_location-on"
+            :name "lying on top of"
+          )
+        )
+        :w 43
+        :attributes ()
+        :y 139
+        :x 422
+      )
+      :3312670 (
+        :type "cheese"
+        :name "cheese"
+        :h 61
+        :relations (
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3382580"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "2907444"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3254432"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3312668"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 68
+        :attributes ()
+        :y 138
+        :x 300
+      )
+      :2708126 (
+        :type "sheet-_assoc-with-fast-food"
+        :name "pizza slice"
+        :h 82
+        :relations (
+          (
+            :object "3960319"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "3312668"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 167
+        :attributes ()
+        :y 131
+        :x 250
+      )
+      :2708125 (
+        :type "sheet-_assoc-with-fast-food"
+        :name "pizza slice"
+        :h 84
+        :relations ()
+        :w 92
+        :attributes ()
+        :y 211
+        :x 1
+      )
+      :3039834 (
+        :type "meat-product"
+        :name "pepperoni"
+        :h 30
+        :relations (
+          (
+            :object "3211367"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "3039835"
+            :type "be-at-loc-_location-on"
+            :name "lying on top of"
+          )
+        )
+        :w 40
+        :attributes ()
+        :y 65
+        :x 442
+      )
+    )
+    :height 331
+  )
+  :2318337 (
+    :width 362
+    :objects (
+      :1011681 (
+        :type "operating-switch-_assoc-with-material"
+        :name "faucet"
+        :h 49
+        :relations ()
+        :w 45
+        :attributes (
+          (
+            :name "metal"
+            :type "material"
+          )
+          (
+            :name "silver"
+            :type "silver"
+          )
+        )
+        :y 383
+        :x 53
+      )
+      :1011688 (
+        :type "furnishings"
+        :name "shelves"
+        :h 132
+        :relations (
+          (
+            :object "1011686"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 178
+        :attributes (
+          (
+            :name "glass"
+            :type "solid-substance"
+          )
+        )
+        :y 72
+        :x 185
+      )
+      :1011689 (
+        :type "nonhuman-animal"
+        :name "monkey"
+        :h 128
+        :relations (
+          (
+            :object "1011701"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 54
+        :attributes (
+          (
+            :name "small"
+            :type "small"
+          )
+          (
+            :name "hanging"
+            :type "attach"
+          )
+        )
+        :y 199
+        :x 288
+      )
+      :1011698 (
+        :type "instrumentation"
+        :name "toothbrush"
+        :h 68
+        :relations (
+          (
+            :object "1011678"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 7
+        :attributes ()
+        :y 294
+        :x 157
+      )
+      :1011682 (
+        :type "sink"
+        :name "sink"
+        :h 38
+        :relations ()
+        :w 136
+        :attributes (
+          (
+            :name "white"
+            :type "white"
+          )
+        )
+        :y 435
+        :x 0
+      )
+      :1011694 (
+        :type "fish"
+        :name "fish"
+        :h 36
+        :relations (
+          (
+            :object "1011686"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 67
+        :attributes (
+          (
+            :name "wood"
+            :type "material"
+          )
+        )
+        :y 44
+        :x 223
+      )
+      :1011701 (
+        :type "nonhuman-animal"
+        :name "bear"
+        :h 34
+        :relations (
+          (
+            :object "1011701"
+            :type "on"
+            :name "on"
+          )
+          (
+            :object "1011678"
+            :type "right-loc"
+            :name "to the right of"
+          )
+          (
+            :object "1011689"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 20
+        :attributes ()
+        :y 262
+        :x 179
+      )
+      :1011700 (
+        :type "duck"
+        :name "duck"
+        :h 35
+        :relations (
+          (
+            :object "1011690"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 40
+        :attributes (
+          (
+            :name "small"
+            :type "small"
+          )
+        )
+        :y 167
+        :x 285
+      )
+      :1011686 (
+        :type "device"
+        :name "mirror"
+        :h 244
+        :relations (
+          (
+            :object "1011688"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1011694"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1011690"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1011679"
+            :type "in-loc"
+            :name "in"
+          )
+        )
+        :w 186
+        :attributes ()
+        :y 0
+        :x 0
+      )
+      :1011690 (
+        :type "duck"
+        :name "ducks"
+        :h 52
+        :relations (
+          (
+            :object "1011700"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1011686"
+            :type "right-loc"
+            :name "to the right of"
+          )
+        )
+        :w 87
+        :attributes (
+          (
+            :name "rubber"
+            :type "material"
+          )
+          (
+            :name "yellow"
+            :type "yellow"
+          )
+        )
+        :y 148
+        :x 203
+      )
+      :1011679 (
+        :type "internal-enclosure"
+        :name "bathroom"
+        :h 498
+        :relations ()
+        :w 360
+        :attributes ()
+        :y 1
+        :x 1
+      )
+      :1011678 (
+        :type "structure-internal-component"
+        :name "wall"
+        :h 127
+        :relations (
+          (
+            :object "1011698"
+            :type "left-loc"
+            :name "to the left of"
+          )
+          (
+            :object "1011701"
+            :type "left-loc"
+            :name "to the left of"
+          )
+        )
+        :w 105
+        :attributes ()
+        :y 244
+        :x 3
+      )
+    )
+    :location "indoors"
+    :height 500
   )
 )

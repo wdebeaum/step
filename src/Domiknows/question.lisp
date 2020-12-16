@@ -5,7 +5,6 @@
   text
   reference-answer
   scene-id
-  request ; KQML request to reply to about this question
   )
 
 (defun read-questions (filename)

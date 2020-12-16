@@ -62,11 +62,10 @@
 		      "What sort of animal ate the pizza?"
 		      "What kind of animal ate the pizza?"
 		      ;; and a few more
-		      ; TODO use scene 2380687 for these two (we don't have type-augmented version of this yet)
-		      "Is the dog sitting?"
-		      "Is the dog running?"
-		      "Is the person standing under the umbrella?" ; question 15192363, scene 2341592
-		      "Is the person holding the spatula on the right?" ; question 00905754, scene 2322797
+		      ;"Is the dog sitting?" ; question 05542027, scene 2380687
+		      "Is the dog running?" ; scene 2380687
+		      ;"Is the person standing under the umbrella?" ; question 15192363, scene 2341592
+		      ;"Is the person holding the spatula on the right?" ; question 00905754, scene 2322797
 		      )
 	for id upfrom 100
 	collect
@@ -75,9 +74,10 @@
 	      :text text
 	      ;; first few are in reference to scene 2374375 and have answers
 	      :reference-answer
-	        (case id ((100 101) "guy") (102 "yes") (103 "guy"))
-	      :scene-id (if (< id 104) 2374375 nil)
-	      :request nil)
+	        (case id ((100 101) "guy") (102 "yes") (103 "guy") (118 "yes"))
+	      :scene-id
+	        (case id ((100 101 102 103) 2374375) (118 2380687))
+	      )
 	into jallen-questions
 	finally (setf *questions* (nconc jallen-questions *questions*))
 	)

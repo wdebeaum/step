@@ -71,8 +71,7 @@
 		     (format nil "The ~a ~a."
 			     attr-name
 			     (word-symbols-to-string obj-name))
-		   ; TODO? set parser options to favor NPs?
-		   with hyps = (parse-and-wait utt-text)
+		   with hyps = (parse-and-wait utt-text :prefer 'identify)
 		   for hyp in hyps
 		   for ont-type = (get-object-type-from-hyp hyp)
 		   when ont-type
@@ -158,7 +157,7 @@
 			(word-symbols-to-string source-name)
 			(word-symbols-to-string reln-name)
 			(word-symbols-to-string target-name))
-	      with hyps = (parse-and-wait utt-text)
+	      with hyps = (parse-and-wait utt-text :prefer 'tell)
 	      for hyp in hyps
 	      for ont-type = (get-reln-type-from-hyp hyp)
 	      when ont-type
@@ -203,7 +202,7 @@
 	        (format nil "The ~a ~a."
 			(word-symbols-to-string attr-name)
 			(word-symbols-to-string obj-name))
-	      with hyps = (parse-and-wait utt-text)
+	      with hyps = (parse-and-wait utt-text :prefer 'identify)
 	      for hyp in hyps
 	      for ont-type = (get-attr-type-from-hyp hyp)
 	      when ont-type

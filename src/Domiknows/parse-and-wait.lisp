@@ -9,12 +9,26 @@
 (defvar *next-uttnum* 1)
 
 ;; TODO memoize?
-(defun parse-and-wait (utt-text)
+(defun parse-and-wait (utt-text &key (prefer 'tell))
   "Sends an utterance message with the given text (to TT). Then reads messages
    until a new-speech-act-hyps message is received (from Parser). Queues
    anything that arrives in between for later handling (via the same mechanism
    as dfc:send-and-wait). Returns the hyps from NSAH, or NIL if the Parser
-   failed."
+   failed. The :prefer argument adjusts the parser's cost table temporarily for
+   this parse so that the given kind of sentence is preferred: 'tell for full
+   declarative sentences, 'question for questions, and 'identify for noun
+   phrases."
+  (ecase prefer
+    (tell nil) ; default
+    (question
+      (send-msg `(request :content (adjust-cost-table :mods (
+	  (ont::SA_YN-QUESTION 1) (ont::SA_WH-QUESTION 1)
+	  )))))
+    (identify
+      (send-msg `(request :content (adjust-cost-table :mods (
+	  (ont::SA_IDENTIFY 1)
+	  )))))
+    )
   ;; Send our message
   (send-msg `(tell :content
     (utterance

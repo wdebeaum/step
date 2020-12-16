@@ -27,4 +27,77 @@
   :|15451857|  (:semantic ((:operation "select"  :dependencies ()  :argument "food (3282635)")  (:operation "verify rel"  :dependencies (0)  :argument "bottle,to the right of,o (-)"))  :entailed ()  :equivalent ("15451857")  :question "Is the food to the right of a bottle?"  :imageId "2331283"  :isBalanced T  :groups (:global NIL  :local "13-food_bottle")  :answer "no"  :semanticStr "select: food (3282635)->verify rel: bottle,to the right of,o (-) (0)"  :annotations (:answer ()  :question (:|2|  "3282635")  :fullAnswer (:|9|  "2855914"  :|2|  "3282635"))  :types (:detailed "relVerifyCo"  :semantic "rel"  :structural "verify")  :fullAnswer "No, the food is to the right of an elephant.") 
   :|15451854|  (:semantic ((:operation "select"  :dependencies ()  :argument "food (3282635)")  (:operation "query"  :dependencies (0)  :argument "hposition"))  :entailed ("15451853"  "15451852"  "15451851"  "15451855")  :equivalent ("15451855"  "15451854")  :question "Which side is the food on?"  :imageId "2331283"  :isBalanced T  :groups (:global NIL  :local "10q-food_hposition")  :answer "right"  :semanticStr "select: food (3282635)->query: hposition (0)"  :annotations (:answer ()  :question (:|4|  "3282635")  :fullAnswer (:|1|  "3282635"))  :types (:detailed "positionQuery"  :semantic "attr"  :structural "query")  :fullAnswer "The food is on the right of the image.") 
   :|13570047|  (:semantic ((:operation "select"  :dependencies ()  :argument "scene")  (:operation "choose location"  :dependencies (0)  :argument "outdoors|indoors"))  :entailed ()  :equivalent ("13570047")  :question "Is it outdoors or indoors?"  :imageId "2331146"  :isBalanced T  :groups (:global "41"  :local "02c-location")  :answer "outdoors"  :semanticStr "select: scene->choose location: outdoors|indoors (0)"  :annotations (:answer ()  :question ()  :fullAnswer ())  :types (:detailed "locationChoose"  :semantic "global"  :structural "choose")  :fullAnswer "It is outdoors.") 
-  :|12557418|  (:semantic ((:operation "select"  :dependencies ()  :argument "fence (4593274)")  (:operation "choose vposition"  :dependencies (0)  :argument "bottom|top"))  :entailed ("12557416"  "12557417")  :equivalent ("12557418")  :question "Is the fence in the top part or in the bottom of the photo?"  :imageId "2379496"  :isBalanced T  :groups (:global NIL  :local "10c-fence_vposition")  :answer "bottom"  :semanticStr "select: fence (4593274)->choose vposition: bottom|top (0)"  :annotations (:answer ()  :question (:|2|  "4593274")  :fullAnswer (:|1|  "4593274"))  :types (:detailed "positionChoose"  :semantic "attr"  :structural "choose")  :fullAnswer "The fence is in the bottom of the image."))
+  :|12557418|  (:semantic ((:operation "select"  :dependencies ()  :argument "fence (4593274)")  (:operation "choose vposition"  :dependencies (0)  :argument "bottom|top"))  :entailed ("12557416"  "12557417")  :equivalent ("12557418")  :question "Is the fence in the top part or in the bottom of the photo?"  :imageId "2379496"  :isBalanced T  :groups (:global NIL  :local "10c-fence_vposition")  :answer "bottom"  :semanticStr "select: fence (4593274)->choose vposition: bottom|top (0)"  :annotations (:answer ()  :question (:|2|  "4593274")  :fullAnswer (:|1|  "4593274"))  :types (:detailed "positionChoose"  :semantic "attr"  :structural "choose")  :fullAnswer "The fence is in the bottom of the image.")
+  :5542027 (:semantic ((:operation "select" 
+  :dependencies () 
+  :argument "dog (1343637)") 
+  (:operation "verify pose" 
+    :dependencies (0) 
+    :argument "sitting")) 
+  :entailed ("05542029" 
+  "05542028") 
+  :equivalent ("05542027") 
+  :question "Is the dog sitting?" 
+  :imageId "2380687" 
+  :isBalanced T 
+  :groups (:global NIL 
+    :local "06-dog_sitting") 
+  :answer "no" 
+  :semanticStr "select: dog (1343637)->verify pose: sitting (0)" 
+  :annotations (:answer () 
+    :question (:|2|  "1343637") 
+    :fullAnswer (:|2|  "1343637")) 
+  :types (:detailed "verifyAttrC" 
+    :semantic "attr" 
+    :structural "verify") 
+  :fullAnswer "No, the dog is running.")
+  :15192363 (:semantic ((:operation "select" 
+  :dependencies () 
+  :argument "person (2533568)") 
+  (:operation "verify rel" 
+    :dependencies (0) 
+    :argument "umbrella, standing under, o (2028054)")) 
+    :entailed () 
+    :equivalent ("15192363") 
+    :question "Is the person standing under the umbrella?" 
+    :imageId "2341592" 
+    :isBalanced T 
+    :groups (:global NIL 
+      :local "13-person_umbrella") 
+    :answer "yes" 
+    :semanticStr "select: person (2533568)->verify rel: umbrella, standing under, o (2028054) (0)" 
+    :annotations (:answer () 
+      :question (:|2|  "2533568" 
+	:|6|  "2028054") 
+      :fullAnswer (:|2|  "2533568" 
+	:|7|  "2028054")) 
+    :types (:detailed "relVerify" 
+      :semantic "rel" 
+      :structural "verify") 
+    :fullAnswer "Yes, the person is standing under the umbrella.")
+  :905754 (:semantic ((:operation "select" 
+  :dependencies () 
+  :argument "person (3211367)") 
+  (:operation "verify rel" 
+    :dependencies (0) 
+    :argument "spatula,holding,o (3211368)")) 
+  :entailed ("00905756" 
+  "00905757") 
+  :equivalent ("00905754") 
+  :question "Is the person holding the spatula on the right?" 
+  :imageId "2322797" 
+  :isBalanced T 
+  :groups (:global NIL 
+    :local "13-person_spatula") 
+  :answer "yes" 
+  :semanticStr "select: person (3211367)->verify rel: spatula,holding,o (3211368) (0)" 
+  :annotations (:answer () 
+    :question (:|2|  "3211367" 
+      :|5|  "3211368") 
+    :fullAnswer (:|2|  "3211367" 
+      :|6|  "3211368")) 
+  :types (:detailed "relVerify" 
+    :semantic "rel" 
+    :structural "verify") 
+  :fullAnswer "Yes, the person is holding the spatula.")
+  )
