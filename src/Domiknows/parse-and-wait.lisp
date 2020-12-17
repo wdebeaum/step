@@ -18,6 +18,7 @@
    this parse so that the given kind of sentence is preferred: 'tell for full
    declarative sentences, 'question for questions, and 'identify for noun
    phrases."
+  (send-msg '(tell :content (start-conversation))) ; avoid corefs (NOTE: this means we must set any parser settings via messages rather than directly setting them in lisp, to avoid racing the Parser to setting those settings)
   (ecase prefer
     (tell nil) ; default
     (question

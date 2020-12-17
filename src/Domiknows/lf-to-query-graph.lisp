@@ -86,6 +86,7 @@
 		  (t ; no "of"
 		    ;; add a fake node for "something"
 		    (let ((target (gentemp "V" :ont)))
+		      (imitate-node qg lfg source)
 		      (add-node qg target 'ONT::referential-sem)
 		      (add-edge qg source dir-ont-type target)
 		      ))
@@ -335,7 +336,23 @@
 		  :sequence
 		  (intern (format nil "SEQUENCE~s" i) :keyword))
 	      for choice-node = (traverse-only-edge op-node seq-label lfg)
-	      ; FIXME!!! focus/choice-node might not be in the final query graph, as it isn't in the case of "to the right or to the left"; choice-node is the "to", but only "right" or "left" makes it in
+	      ;; when it's a WH-question with explicit choices linked from the
+	      ;; speechact, replace the :focus (the WH-word) with the
+	      ;; choice-node
+	      do (when (and (eq sa-type 'ONT::SA_WH-QUESTION)
+			    (has-edge sa :choice-option choice-lfg)
+			    (eq choice-node
+				(traverse-only-edge sa :choice-option
+						    choice-lfg))
+			    (has-edge sa :focus choice-lfg))
+		   (let ((focus-node (traverse-only-edge sa :focus choice-lfg)))
+		     ;; this is a little iffy, but it works, and it's a lot
+		     ;; easier to write than something that does it more
+		     ;; carefully
+		     (setf (lf-graph-terms choice-lfg)
+			   (subst choice-node focus-node
+				  (remove focus-node (lf-graph-terms choice-lfg)
+					  :key #'second)))))
 	      collect (lf-to-query-graph choice-lfg choice-node)
 	      into graphs
 	      finally (return (make-query :mode :mc :graphs graphs))))

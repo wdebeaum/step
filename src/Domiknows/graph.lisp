@@ -416,7 +416,7 @@
 	(union (query-graph-nodes dst-qg) (query-graph-nodes src-qg)
 	       :key #'car))
   (setf (query-graph-edges dst-qg)
-	(union (query-graph-nodes dst-qg) (query-graph-nodes src-qg)
+	(union (query-graph-edges dst-qg) (query-graph-edges src-qg)
 	       :test #'equalp))
   )
 
