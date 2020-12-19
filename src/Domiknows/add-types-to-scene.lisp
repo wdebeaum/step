@@ -105,10 +105,11 @@
 	    (setf reln-type (lf-node-type reln-node lfg))
 	    )
 	  (setf ont-type (list reln-type))
-	  (when (and (eq 'ONT::more-val ont-type)
+	  (when (and (equalp '(ONT::more-val) ont-type)
 		     (has-edge reln-node :scale lfg))
 	    (let* ((scale-node (traverse-only-edge reln-node :scale lfg))
 		   (scale-type (lf-node-type scale-node lfg)))
+	      ;(format t "~&DEBUG: adding :scale ~s (node ~s) to ONT::more-val~%" scale-type scale-node)
 	      (setf ont-type
 		    (util:insert-arg-in-act ont-type :scale scale-type))))))
       ;; ...->type if not W::BE
@@ -176,19 +177,13 @@
 	 (terms (hyp-lf-terms hyp))
 	 (lfg (make-lf-graph :terms (prepare-lf-terms-for-graph terms)))
 	 (content (content-or-root root lfg))
-	 (attr-node
-	   (cond
-	     ((has-edge content :mod lfg)
-	       (traverse-only-edge content :mod lfg))
-	     ((has-edge content :assoc-with lfg)
-	       (traverse-only-edge content :assoc-with lfg))
-	     ))
 	 )
     (dolist (edge-label '(:mod :assoc-with :figure))
       (when (has-edge content edge-label lfg)
-	(let ((attr-node (traverse-only-edge content edge-label lfg)))
-	  (return-from get-attr-type-from-hyp
-	    (lf-node-type attr-node lfg)))))))
+	(let ((attr-nodes (traverse-edge content edge-label lfg)))
+	  (when (= 1 (length attr-nodes))
+	    (return-from get-attr-type-from-hyp
+	      (lf-node-type (car attr-nodes) lfg))))))))
 
 (defun add-type-to-attr (obj attr)
     (declare (type scene-graph-object obj) (type scene-graph-attr attr))

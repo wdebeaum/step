@@ -62,6 +62,7 @@
 			  (caadr (find-arg-in-act msg :content)))))
 	      ;; Yes, it's our NSAH; take the hyps for the answer
 	      (logging2:log-message :note (list :received-nsah msg))
+	      ;(sleep 2) ; DEBUG: let IM do its thing first so we can see what's going on
 	      (return-from parse-and-wait
 		(second (find-arg-in-act msg :content))))
 	    ((dfc::match-msg-pattern failure-pat msg)

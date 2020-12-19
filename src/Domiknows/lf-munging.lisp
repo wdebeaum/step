@@ -163,6 +163,171 @@
 
 ;;;
 ;;; simplify superlatives: "the X-est of the Ys" -> "the X-est Y"
+;;; and split questions using superlatives into useful parts
 ;;;
 
-; TODO!!!
+(defun find-superlative-node (lfg)
+    (declare (type lf-graph lfg))
+  "Find the min-val/max-val node, if any, in the given lf-graph. Signal an
+   error if there is more than one. Return nil if there are none."
+  (let ((superlative-nodes
+	  (remove-if-not
+	    (lambda (n)
+	      (member (lf-node-type n lfg) '(ONT::min-val ONT::max-val)))
+	    (nodes lfg))))
+    (case (length superlative-nodes)
+      (0 nil)
+      (1 (car superlative-nodes))
+      (otherwise
+	(error "can't handle question with more than one superlative"))
+      )))
+
+(defun simplify-superlative-of-the (superlative-node lfg)
+  "If the given LF graph with a superlative node uses the more complicated \"of
+   the\"/:refset construction, return a copy that doesn't. Otherwise return the
+   original graph."
+  (if (has-edge superlative-node :refset lfg)
+    (loop with refset = (traverse-only-edge superlative-node :refset lfg)
+	  with figure = (traverse-only-edge superlative-node :figure lfg)
+	  for old-term in (lf-graph-terms lfg)
+	  for new-term = (copy-list old-term)
+	  for term-id = (second old-term)
+	  do
+	    ;; remove :refset arg from superlative term
+	    (when (eq superlative-node term-id)
+	      (setf (cdddr new-term) (remove-arg (cdddr new-term) :refset)))
+	    ;; replace figure node with refset node in args
+	    (setf (cdddr new-term) (substitute refset figure (cdddr new-term)))
+	    ;; add :mod from refset term to superlative term (replacing the
+	    ;; :mod from the figure to the superlative)
+	    (when (eq refset term-id)
+	      (push superlative-node (cdddr new-term))
+	      (push :mod (cdddr new-term)))
+	  when (not (eq figure (second old-term))) ; don't take figure term
+	    collect new-term
+	    into new-terms
+	  finally (return (make-lf-graph :terms new-terms)))
+    ; no :refset, just return the original graph
+    lfg))
+
+;; common lisp, y u no have this already?
+(defun copy-hash-table (old-hash)
+  (loop with new-hash =
+	  (make-hash-table
+	    :test (hash-table-test old-hash)
+	    :size (hash-table-size old-hash)
+	    :rehash-size (hash-table-rehash-size old-hash)
+	    :rehash-threshold (hash-table-rehash-threshold old-hash)
+	    )
+	for k being the hash-keys of old-hash using (hash-value v)
+	do (setf (gethash k new-hash) v)
+	finally (return new-hash)))
+
+(defun show-hash-table-entries (h)
+  (loop for k being the hash-keys of h using (hash-value v)
+	do (format t "  ~s => ~s~%" k v)))
+
+(defun split-superlative (superlative-node lfg)
+    (declare (type symbol superlative-node) (type lf-graph lfg))
+  "Given a node representing superlative adjective in an lf-graph, return three
+   lf-graphs and certain nodes in them as multiple values:
+    - a graph for just the noun the superlative applies to (with any other
+      modifiers)
+    - the node for that noun (to be used as the focus of a query-graph)
+    - a graph that is like two copies of the above graph with a comparative
+      linking the two nouns that is similar to the superlative (i.e. max-val
+      becomes more-val and min-val becomes less-val)
+    - the node for the duplicate copy of the noun that the comparative is
+      pointing to
+    - a graph for the rest of the original graph, including the noun but not
+      its modifiers
+   This function also handles normalizing stilted superlative phrases like
+   \"the X-est of the Ys\" to be the same as \"the X-est Y\".
+   See also find-superlative-node."
+  (let* ((slfg (simplify-superlative-of-the superlative-node lfg))
+	 ;; parts we'll need
+	 (sa-node (speechact-node slfg))
+	 (superlative-type (second (label superlative-node slfg)))
+	 (comparative-type
+	   `(:*
+	      ,(ecase (second superlative-type)
+		 (ONT::MAX-VAL 'ONT::MORE-VAL)
+		 (ONT::MIN-VAL 'ONT::LESS-VAL))
+	      ,(third superlative-type)
+	      ))
+	 (superlative-scale (traverse-only-edge superlative-node :scale slfg))
+	 (noun-node (traverse-only-edge superlative-node :figure slfg))
+	 (noun-term (find-lf-term noun-node slfg))
+	 (stripped-noun-term (subseq noun-term 0 3)) ; no args
+	 ;; set up basics of new graphs
+	 (other-noun-node (gentemp "V" :ONT)) ; not final
+	 (be-node (gentemp "V" :ONT))
+	 ;; "What/is there a <NP>?"
+	 ;; (this is sort of a weird hybrid that the parser wouldn't actually
+	 ;; produce, but lf-to-query-graph works on it)
+	 (noun-lfg (make-lf-graph :terms `(
+	   (ONT::SPEECHACT ,sa-node ONT::SA_WH-QUESTION
+	       :content ,be-node
+	       :focus ,noun-node)
+	   (ONT::F ,be-node (:* ONT::exists W::be) :neutral ,noun-node)
+	   )))
+	 ;; "Is (another) <NP> <comparative> than <NP>?"
+	 (comp-lfg (make-lf-graph :terms `(
+	   (ONT::SPEECHACT ,sa-node ONT::SA_YN-QUESTION :content ,be-node)
+	   (ONT::F ,be-node (:* ONT::have-property W::be)
+	       :neutral ,other-noun-node
+	       :formal ,superlative-node)
+	   (ONT::F ,superlative-node ,comparative-type
+	       :scale ,superlative-scale
+	       :figure ,other-noun-node
+	       :compar ,noun-node)
+	   ,(find-lf-term superlative-scale slfg)
+	   )))
+	 ;; everything from the original question except the superlative and
+	 ;; anything else under the noun node
+	 (rest-lfg (make-lf-graph :terms nil))
+	 ;; visited hash for masking out nodes involved with the superlative
+	 ;; itself
+	 (superlative-mask (make-hash-table :test #'eq))
+	 ;; visited hash for collecting the nodes in the noun subgraph
+	 noun-subgraph-nodes
+	 other-noun-subgraph-nodes
+	 )
+    ;(format t "~&superlative-node=~s~%superlative-scale=~s~%initial noun-lfg=~%  ~s~%initial comp-lfg=~%  ~s~%" superlative-node superlative-scale noun-lfg comp-lfg)
+    (setf (gethash superlative-node superlative-mask) superlative-node
+	  (gethash superlative-scale superlative-mask) superlative-scale)
+    ;(format t "superlative-mask=~%")
+    ;(show-hash-table-entries superlative-mask)
+    ;; copy just the noun subgraph into noun-lfg (without superlative)
+    (setf noun-subgraph-nodes (copy-hash-table superlative-mask))
+    ;(format t "noun-subgraph-nodes (before) =~%")
+    ;(show-hash-table-entries noun-subgraph-nodes)
+    (copy-lf-subgraph noun-node noun-lfg slfg :visited noun-subgraph-nodes)
+    ;(format t "noun-subgraph-nodes (after noun-lfg) =~%")
+    ;(show-hash-table-entries noun-subgraph-nodes)
+    ;; delete :mod superlative-node from noun term in noun-lfg
+    (delete-specific-arg-from-term noun-node :mod superlative-node noun-lfg)
+    ;; copy the noun subgraph into comp-lfg twice; first time add it with the
+    ;; same term IDs, and second time add it with distinct term IDs (starting
+    ;; with other-noun-node)
+    (setf noun-subgraph-nodes (copy-hash-table superlative-mask))
+    (copy-lf-subgraph noun-node comp-lfg slfg :visited noun-subgraph-nodes)
+    ;(format t "noun-subgraph-nodes (after comp-lfg) =~%")
+    ;(show-hash-table-entries noun-subgraph-nodes)
+    (setf other-noun-subgraph-nodes (copy-hash-table superlative-mask))
+    (copy-lf-subgraph noun-node comp-lfg slfg
+	:fresh-vars t :new-node other-noun-node
+	:visited other-noun-subgraph-nodes)
+    ;(format t "other-noun-subgraph-nodes=~%")
+    ;(show-hash-table-entries other-noun-subgraph-nodes)
+    ;; copy everything from the original question except the noun subgraph into
+    ;; rest-lfg
+    (copy-lf-subgraph sa-node rest-lfg slfg :visited noun-subgraph-nodes)
+    ;(format t "noun-subgraph-nodes (after rest-lfg) =~%")
+    ;(show-hash-table-entries noun-subgraph-nodes)
+    ;; but add the noun node itself with no args
+    (setf (lf-graph-terms rest-lfg)
+	  (append (lf-graph-terms rest-lfg) (list stripped-noun-term)))
+    ;; return what's needed to make queries
+    (values noun-lfg noun-node comp-lfg other-noun-node rest-lfg)
+    ))

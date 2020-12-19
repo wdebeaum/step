@@ -55,9 +55,12 @@
 	(cond
 	  ((and (eq ont-type 'ONT::exists) (eq word 'W::be)
 		(has-edge n :neutral lfg))
-	    (setf (gethash n visited)
-	      (lf-to-query-node (traverse-only-edge n :neutral lfg)
-				qg lfg visited)))
+	    (let ((neutral (traverse-only-edge n :neutral lfg)))
+	      (setf (gethash n visited)
+		    (lf-to-query-node neutral qg lfg visited))
+	      ;; make sure the relevant node is in qg even if it lacks modifiers
+	      (imitate-node qg lfg neutral)
+	      ))
 	  ((and (has-edge n :formal lfg)
 		(member ont-type
 			'(ONT::have-property ONT::appears-to-have-property)))
@@ -318,6 +321,7 @@
   (let* ((lfg (make-lf-graph :terms (prepare-lf-terms-for-graph lf-terms)))
 	 (op-node (find-operator-node lfg))
 	 (op (when op-node (traverse-only-edge op-node :operator lfg)))
+	 (sup-node (find-superlative-node lfg))
 	 (sa (speechact-node lfg))
 	 (sa-type (second (label sa lfg)))
 	 (mode ; first guess
@@ -327,6 +331,8 @@
 	     ))
 	 (focus (when (eq mode :wh) (traverse-only-edge sa :focus lfg)))
 	 )
+    (when (and op-node sup-node)
+      (error "can't handle question with both an AND or OR operator and a superlative"))
     (ecase op
       (ONT::OR ; multiple choice (mode changes to :mc)
 	(loop for choice-lfg in (split-operator op-node lfg)
@@ -364,6 +370,17 @@
 	      do (update-query-graph qg operand-qg)
 	      finally (return (make-query :mode mode :graphs (list qg)))))
       ((nil) ; no operator
-	(make-query :mode mode :graphs (list (lf-to-query-graph lfg focus))))
-      ; TODO!!! superlatives
+        (if sup-node
+	  ;; have superlative, split it and make query graphs for the parts
+	  (multiple-value-bind (noun-lfg noun-node
+				comp-lfg other-noun-node
+				rest-lfg)
+	      (split-superlative sup-node lfg)
+	    (make-query :mode :est :graphs (list
+	        (lf-to-query-graph noun-lfg noun-node)
+		(lf-to-query-graph comp-lfg other-noun-node)
+		(lf-to-query-graph rest-lfg focus)
+		)))
+	  ; else no sup-node, just a regular old single query
+	  (make-query :mode mode :graphs (list (lf-to-query-graph lfg focus)))))
       )))

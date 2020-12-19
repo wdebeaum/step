@@ -38,18 +38,23 @@
       ;; when query label is of the form (main-type :scale scale-type), scene
       ;; label must also have main and scale types that are subtypes
       ((and qt (listp ql) (= 3 (length ql)) (eq :scale (second ql)))
+        ;(format t "~&DEBUG: query label has :scale~%  query label = ~s~%  scene label = ~s~%" ql sl)
         ;; ensure scene label's main type is subtype
         (unless (and st (om::is-sublf st qt))
+	  ;(format t "~&DEBUG: ~s is not a subtype of ~s~%" st qt)
 	  (return-from labels-match-p nil))
 	;; get scale types
         (let ((qs (third ql))
 	      (ss
-		(if (and (listp sl) (= 3 (length sl)) (eq :scale (second sl)))
+		(if (and (listp sl) (= 3 (length sl)) (eq :* (car sl))
+			 (listp (second sl)) (= 3 (length (second sl)))
+			 (eq :scale (second (second sl))))
 		  ; scene label has :scale too
-		  (third sl)
+		  (third (second sl))
 		  ; no explicit :scale, look it up in ontology
 		  (ont-type-scale st)
 		  )))
+	  ;(format t "~&DEBUG:~%  query scale type = ~s~%  scene scale type = ~s~%" qs ss)
 	  ;; ensure scene label's scale type is a subtype
 	  (and ss (om::is-sublf ss qs))))
       ;; when query has an ONT type, scene must have a subtype of that type
@@ -86,7 +91,7 @@
     (when existing-binding ; already bound qn to something, return early
       (if (eql sn (cdr existing-binding))
 	(return-from match-nodes bindings) ; to the same node, success
-	nil ; to a different node, fail
+	(return-from match-nodes nil) ; to a different node, fail
 	)))
   ;; ensure node labels match
   (unless (labels-match-p qn qg sn sg)
@@ -107,7 +112,7 @@
 	)
   )
 
-(defun match-graphs (qg sg)
+(defun match-graphs (qg sg &optional bindings)
     (declare (type query-graph qg) (type scene-graph sg))
   "Match a query graph to a scene graph, and return the scene graph node
    corresponding to the focus of the query, if any. If the query has no focus
@@ -122,17 +127,35 @@
 	;; try to match it against each scene graph node
         for sn in (nodes sg)
 	;; recursively match from selected nodes
-        for bindings = (match-nodes qn qg sn sg nil)
+        for new-bindings = (match-nodes qn qg sn sg bindings)
 	;; if there's a match, return immediately
-	when bindings
+	when new-bindings
         do (return
 	     (if qfocus
-	       (cdr (assoc qfocus bindings)) ; wh-question, return focus
+	       (cdr (assoc qfocus new-bindings)) ; wh-question, return focus
 	       t ; yes/no question, return t
 	       ))
 	;; no match found, return nil
 	finally (return nil)
 	))
+
+(defun match-graphs-all (qg sg)
+  "Like match-graphs, but return the list of possible results based on
+   different ways of matching the graph. Only useful for wh-questions."
+  ;; HACK: just get the first result, and try again recursively with the scene
+  ;; minus that result, until the match fails
+  (let ((first-result (match-graphs qg sg)))
+    (when first-result
+      (cons first-result
+	    (match-graphs-all qg
+		(copy-scene-graph-without-part first-result sg))))))
+
+(defun match-graphs-with-nodes (qn qg sn sg)
+  "Like match-graphs, but try to match the given nodes first, and then try to
+   bind the rest of the graph from the usual root."
+  (let ((bindings (match-nodes qn qg sn sg nil)))
+    (when bindings
+      (match-graphs qg sg bindings))))
 
 (defun query-scene (q sg)
     (declare (type query q) (type scene-graph sg))
@@ -154,5 +177,32 @@
 	    ;(error "multiple options in a multiple-choice question matched")
 	    nil)
 	  )))
-    ; TODO!!! :est
+    (:est
+      ;; get the three query graphs we need to do superlative matching: the one
+      ;; for the noun the superlative applies to, the comparative version of
+      ;; the superlative connecting two copies of that noun, and the rest of
+      ;; the question
+      (destructuring-bind (noun-qg comp-qg rest-qg) (query-graphs q)
+	(let* ((noun-qg-node (query-graph-focus noun-qg))
+	       ;; get all the matches for the noun (if there are none, the
+	       ;; answer will still work out to NIL/IDK)
+	       (noun-matches (match-graphs-all noun-qg sg))
+	       ;; test whether each allows the comparative to match
+	       (comp-matches
+		 (mapcar
+		   (lambda (noun-sg-node)
+		     (match-graphs-with-nodes noun-qg-node comp-qg
+					      noun-sg-node sg))
+		   noun-matches)))
+	  (format t "~&noun-matches=~%  ~s~%comp-matches=~%  ~s~%" noun-matches comp-matches)
+	  ;; if exactly one doesn't allow the comparative to match (i.e. there
+	  ;; is no other noun match that fits on the other end of the
+	  ;; comparative)
+	  (when (= 1 (count nil comp-matches))
+	    ;; get that one noun node in the scene
+	    (let* ((match-position (position nil comp-matches))
+		   (noun-sg-node (nth match-position noun-matches)))
+	      ;; and use it while matching the rest of the question
+	      (match-graphs-with-nodes noun-qg-node rest-qg
+				       noun-sg-node sg))))))
     ))

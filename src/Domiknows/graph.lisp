@@ -117,6 +117,19 @@
     (declare (type symbol n) (type lf-graph g))
   (find n (lf-graph-terms g) :key #'second))
 
+(defun delete-specific-arg-from-term (n k v g)
+    (declare (type symbol n) (type keyword k) (type lf-graph g))
+  "Destructively remove a specific argument (specified by both key and value)
+   from a term in an lf-graph."
+  (loop with term = (find-lf-term n g)
+	for prev-cons = (cddr term) then (cddr prev-cons)
+	while (cdr prev-cons)
+	when (and (eq k (second prev-cons))
+		  (equalp v (third prev-cons)))
+	do (setf (cdr prev-cons) (cdddr prev-cons))
+	   (loop-finish)
+	))
+
 (defun speechact-node (g)
     (declare (type lf-graph g))
   (find 'ONT::speechact (nodes g) :key (lambda (n) (car (label n g)))))
@@ -153,6 +166,49 @@
 
 (defmethod target ((e cons) (g lf-graph))
   (third e))
+
+(defun copy-lf-subgraph (node dst-graph src-graph &key fresh-vars new-node (visited (make-hash-table :test #'eq)))
+    (declare (type symbol node) (type lf-graph dst-graph src-graph)
+	     (type boolean fresh-vars) (type hash-table visited))
+  "Copy the subgraph of the LF graph src-graph rooted at node into the LF graph
+   dst-graph. If :fresh-vars T, change the IDs of all the copied nodes so they
+   do not conflict with nodes already in dst-graph (use :new-node for this if
+   provided). Otherwise do not copy nodes already in dst-graph. Return the new
+   node ID in dst-graph, and add mappings from the old to the new node IDs in
+   the visited hash."
+  (unless (gethash node visited)
+    (let* ((new-term
+	     (copy-list
+	       (or (find-lf-term node src-graph)
+		   ;; not actually a term, don't copy it, just use the value
+		   (return-from copy-lf-subgraph node))))
+	   (new-term-id
+	     ;; make new ID or use old one depending on :fresh-vars arg
+	     (if fresh-vars
+	       (setf (second new-term)
+		     (if new-node new-node (gentemp "V" :ONT)))
+	       (second new-term))))
+      ;; remember that we visited this node, and which node it turned into
+      (setf (gethash node visited) new-term-id)
+      ;; return early if dst-graph already has this node
+      (when (and (not fresh-vars) (find-lf-term new-term-id dst-graph))
+	(return-from copy-lf-subgraph new-term-id))
+      ;; add the new term to dst-graph, at the end of the list of terms
+      (setf (lf-graph-terms dst-graph)
+	    (append (lf-graph-terms dst-graph) (list new-term)))
+      ;; recurse on arguments, using new term IDs where appropriate
+      (loop for remaining-args = (cdddr new-term) then (cddr remaining-args)
+	    for target = (second remaining-args)
+	    while remaining-args
+	    when (and (symbolp target) (find-lf-term target src-graph))
+	    do (setf (second remaining-args)
+		     (copy-lf-subgraph target dst-graph src-graph
+				       :fresh-vars fresh-vars
+				       :visited visited))
+	    )
+      ))
+  ;; return new term ID, regardless of whether we actually did anything
+  (gethash node visited))
 
 ;;;
 ;;; GQA Scene Graph
@@ -226,6 +282,69 @@
 
 (defmethod target ((e cons) (g scene-graph))
   (third e))
+
+(defgeneric copy-scene-graph-without-part (part graph) (:documentation
+  "Make a copy of a scene graph without a specific part (or other parts that
+   depend on it: removing an object will remove relns it participates in, and
+   its attributes)."))
+
+;; part is object
+(defmethod copy-scene-graph-without-part ((n integer) (g scene-graph))
+  (loop for o in (scene-graph-objects g)
+	for oid = (scene-graph-object-id o)
+	unless (= n oid)
+	collect
+	  (make-scene-graph-object
+	      :id oid
+	      :type (scene-graph-part-type o)
+	      :name (scene-graph-part-name o)
+	      :relns
+		(remove-if (lambda (r) (= n (scene-graph-reln-target r)))
+			   (scene-graph-object-relns o))
+	      :attrs (scene-graph-object-attrs o)
+	      )
+	  into new-objects
+	finally (return
+	  (make-scene-graph
+	      :id (scene-graph-id g)
+	      :objects new-objects
+	      :attrs (loop for no in new-objects
+			   append (scene-graph-object-attrs no))
+	      ))))
+
+(defmethod copy-scene-graph-without-part ((e scene-graph-reln) (g scene-graph))
+  (make-scene-graph
+      :id (scene-graph-id g)
+      :objects
+        (mapcar
+	  (lambda (o)
+	    (make-scene-graph-object
+		:id (scene-graph-object-id o)
+		:type (scene-graph-part-type o)
+		:name (scene-graph-part-name o)
+		:relns (remove e (scene-graph-object-relns o) :test #'eq)
+		:attrs (scene-graph-object-attrs o)
+		))
+	  (scene-graph-objects g))
+      :attrs (scene-graph-attrs g)
+      ))
+
+(defmethod copy-scene-graph-without-part ((n scene-graph-attr) (g scene-graph))
+  (make-scene-graph
+      :id (scene-graph-id g)
+      :objects
+        (mapcar
+	  (lambda (o)
+	    (make-scene-graph-object
+		:id (scene-graph-object-id o)
+		:type (scene-graph-part-type o)
+		:name (scene-graph-part-name o)
+		:relns (scene-graph-object-relns o)
+		:attrs (remove n (scene-graph-object-attrs o) :test #'eq)
+		))
+	  (scene-graph-objects g))
+      :attrs (remove n (scene-graph-attrs g) :test #'eq)
+      ))
 
 (defun str2ont (str)
   (intern (string-upcase str) :ont))

@@ -110,7 +110,7 @@ or
 <title>Domiknows</title>
 <script type=\"text/javascript\" src=\"../style/parser-interface.js\"></script>
 </head>
-<body onload=\"dotsToSVG();\">
+<body onload=\"dotsToSVG(true);\">
 <pre class=\"dot\">
 ~a
 </pre>
@@ -128,11 +128,12 @@ or
 <title>Domiknows</title>
 <script type=\"text/javascript\" src=\"../style/parser-interface.js\"></script>
 </head>
-<body onload=\"dotsToSVG();\">
+<body onload=\"dotsToSVG(true);\">
 Question: ~a<br>
 System answer: ~a (~a)<br>
 ~a
 <hr>
+Query mode: ~a<br>
 Query:<br>
 <pre class=\"dot\">
 ~a
@@ -153,6 +154,11 @@ answer-id
 	  (if (string-equal answer-text (question-reference-answer question))
 	    "YES" "NO"))
   "")
+(ecase (query-mode query)
+  (:yn "yes/no question")
+  (:wh "wh- question")
+  (:mc "multiple choice question")
+  (:est "superlative"))
 (escape-for-xml query-dot)
 (escape-for-xml scene-dot)
 )))))
