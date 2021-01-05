@@ -162,7 +162,10 @@
   "Return the ID of the answer to the query in relation to the scene. Like
    match-graphs, but this takes a query, not a query-graph."
   (ecase (query-mode q)
-    ((:yn :wh) (match-graphs (car (query-graphs q)) sg))
+    ((:yn :wh)
+      (loop for qg in (query-graphs q)
+	    for match = (match-graphs qg sg)
+	    when match return match))
     (:mc
       (let ((answer-ids
 	      (remove nil (mapcar (lambda (qg) (match-graphs qg sg))

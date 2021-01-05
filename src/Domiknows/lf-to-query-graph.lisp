@@ -67,6 +67,20 @@
 	    (setf (gethash n visited)
 	      (lf-to-query-node (traverse-only-edge n :formal lfg)
 				qg lfg visited)))
+	  ; TODO? "what is X?" currently handled in general case, but that makes a bogus node for "what"; how to distinguish from subtler things like "what kind of Y is X?"?
+	  ;; what is X called?
+	  ((and (eq ont-type 'ONT::naming)
+		(has-edge n :neutral lfg)
+		(has-edge n :formal lfg)
+		(let ((formal (traverse-only-edge n :formal lfg)))
+		  (and (eq formal (query-graph-focus qg))
+		       (eq 'ONT::wh-term (first (label formal lfg))))))
+	    (let ((neutral (traverse-only-edge n :neutral lfg)))
+	      (setf (gethash n visited)
+		    (lf-to-query-node neutral qg lfg visited))
+	      (imitate-node qg lfg neutral)
+	      (setf (query-graph-focus qg) (gethash n visited))
+	      ))
 	  ;; to/on the left/right [of something]
 	  ((and (member ont-type '(ONT::at-loc-relative ONT::to-loc))
 		(has-edge n :figure lfg)
@@ -222,15 +236,13 @@
 				     (label (list ont-type :location mid-ont-type)))
 				(lf-to-query-node source qg lfg visited)
 				(lf-to-query-node target qg lfg visited)
-				(add-edge qg source label target)
+				(imitate-edge qg lfg source label target)
 				))
 			    (t
 			      ; it didn't work; instead make the one role we
 			      ; found an attribute instead of a relation
-			      ;(lf-to-query-node source qg lfg visited)
-			      (imitate-node qg lfg source)
-			      (imitate-node qg lfg n)
-			      (add-edge qg source :attr n)
+			      (lf-to-query-node source qg lfg visited)
+			      (imitate-edge qg lfg source :attr n)
 			      )
 			    ))
 			))
@@ -304,8 +316,10 @@
   graphs ; list of query-graph structures, depending on mode
   ; :yn
   ;   1 graph, answer is T if it matches, NIL if it doesn't.
+  ;   (if >1 graph, try each in turn until one matches)
   ; :wh
   ;   1 graph, answer is the focus if it matches, NIL if it doesn't.
+  ;   (if >1 graph, try each in turn until one matches)
   ; :mc (multiple choice)
   ;   N graphs, answer is the focus of the first that matches, NIL otherwise.
   ; :est (superlative, e.g. What is the X-est Y Z-ing?)
@@ -362,6 +376,17 @@
 	      collect (lf-to-query-graph choice-lfg choice-node)
 	      into graphs
 	      finally (return (make-query :mode :mc :graphs graphs))))
+      (ONT::ONE-OF ; like OR, but not multiple choice (keep :wh/:yn mode)
+	(loop for choice-lfg in (split-operator op-node lfg)
+	      for i upfrom 0
+	      for seq-label =
+		(if (= 0 i)
+		  :sequence
+		  (intern (format nil "SEQUENCE~s" i) :keyword))
+	      for choice-node = (traverse-only-edge op-node seq-label lfg)
+	      collect (lf-to-query-graph choice-lfg choice-node)
+	      into graphs
+	      finally (return (make-query :mode mode :graphs graphs))))
       (ONT::AND
 	;; merge query graphs for each operand
 	(loop with qg = (make-query-graph :focus focus)
