@@ -63,7 +63,7 @@
 	      ))
 	  ((and (has-edge n :formal lfg)
 		(member ont-type
-			'(ONT::have-property ONT::appears-to-have-property)))
+			'(ONT::have-property ONT::seem)))
 	    (setf (gethash n visited)
 	      (lf-to-query-node (traverse-only-edge n :formal lfg)
 				qg lfg visited)))

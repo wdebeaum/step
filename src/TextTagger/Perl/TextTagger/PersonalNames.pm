@@ -13,8 +13,10 @@ my $debug = 0;
 
 my $ambiguity_threshold = 0.2; # If both male and female freqs are above 20% of the total, consider the name ambiguous
 
-# less-common personal names that are also names of other things
-my @blacklist = (
+# less-common personal names that are also names of other things, or just words
+# that often occur at the beginning of a sentence and get capitalized
+# see also PlaceNames.pm
+my @stoplist = (
   # week days (Thursday and Saturday aren't attested, but I'm being thorough)
   qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday),
   # months
@@ -26,8 +28,6 @@ my @blacklist = (
   # Summer and Autumn have frequency >10,000 as names
   qw(Spring Fall Winter),
   # personal pronouns
-  # (These aren't names, but they get capitalized at the beginning of a
-  # sentence.)
   # Again, I'm being thorough, using this table:
   # https://en.wikipedia.org/wiki/English_personal_pronouns#Basic
   qw(I Me My Mine Myself
@@ -46,13 +46,23 @@ my @blacklist = (
      Half
      Less Little Lots
      Many More Most Much
-     No None Numerous
+     No None Not Numerous
      Only
      Plenty
      Several Some
      That The These This Those
      Various
      What Which
+  ),
+  # aux/be verbs; not all attested; "Will" and "May" omitted because they're
+  # very common names
+  qw(Be Is Are Am Was Were Been Being
+     Do Does Did Done Doing
+     Has Have Had Having
+     Might
+     Can Could
+     Would
+     Shall Should
   )
 );
 
@@ -93,7 +103,7 @@ sub tag_personal_names {
     die "Bogus output from personal names tagger: '$term'"
       unless ($term =~ /^[^\t]+(?:\t\d+){4}$/);
     my ($lex, $start, $end, $male_freq, $female_freq) = split(/\t/, $term);
-    next if (grep { $_ eq $lex } @blacklist);
+    next if (grep { $_ eq $lex } @stoplist);
     my $total_freq = $male_freq + $female_freq;
     my $male_prop = $male_freq * 1.0 / $total_freq;
     my $female_prop = $female_freq * 1.0 / $total_freq;

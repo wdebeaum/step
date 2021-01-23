@@ -80,7 +80,11 @@
     ; wh question (roughly)
     (if answer-id
       ; NOTE: this works for a node or an edge, both labeled with (:* ont w)
-      (string-downcase (symbol-name (third (label answer-id sg))))
+      (let ((answer-words (third (label answer-id sg))))
+        (etypecase answer-words
+	  (symbol (string-downcase (symbol-name answer-words)))
+	  (cons (format nil "~(~{~a~^ ~}~)" answer-words))
+	  ))
       "I don't know")
     ))
 
