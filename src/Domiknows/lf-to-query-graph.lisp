@@ -387,7 +387,7 @@
 	      collect (lf-to-query-graph choice-lfg choice-node)
 	      into graphs
 	      finally (return (make-query :mode mode :graphs graphs))))
-      (ONT::AND
+      ((ONT::AND ONT::BOTH)
 	;; merge query graphs for each operand
 	(loop with qg = (make-query-graph :focus focus)
 	      for operand-lfg in (split-operator op-node lfg)
