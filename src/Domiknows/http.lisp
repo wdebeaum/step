@@ -30,7 +30,7 @@
 <h1>Domiknows</h1>
 <hr>
 <form action=\"#\" method=\"POST\">
-<div style=\"display: inline-block\">
+<div style=\"display: inline-block; vertical-align: top\">
 <label>Pick question:
 <select name=\"question-id\">
 <option value=\"custom\">custom</option>
@@ -44,14 +44,16 @@ or
 </div>
 <div style=\"display: inline-block; border-left: 1px solid black;\">
 <label>Pick scene:
-<select name=\"scene-id\">
+<select name=\"scene-id\" onchange=\"document.getElementById('scene-img').src='../gqa/' + this.value + '.jpg';\">
 <option value=\"from-question\">use the scene from the question*</option>
 <option value=\"custom\">custom</option>
 ~{~a~%~}
 </select></label>
 or
 <br>
-<textarea name=\"scene-json\" placeholder=\"enter a JSON scene graph, including its ID. { &quot;1234567&quot;: { &quot;objects&quot;: { ... } ... } } (only the first scene will be displayed)\" rows=\"20\" cols=\"72\"></textarea>
+<textarea name=\"scene-json\" placeholder=\"enter a JSON scene graph, including its ID. { &quot;1234567&quot;: { &quot;objects&quot;: { ... } ... } } (only the first scene will be displayed)\" rows=\"10\" cols=\"72\"></textarea>
+<br>
+<img id=\"scene-img\" src=\"../gqa/from-question.jpg\">
 <br>
 <input type=\"submit\" name=\"op\" value=\"display-scene-graph\">
 <br>
