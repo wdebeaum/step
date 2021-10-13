@@ -36,7 +36,8 @@
 					 (ont::SA_request 1.2) (ont::SA_YN-QUESTION 1.2)
 					 (ont::SA_CONFIRM 1.3) (ont::SA_WH-QUESTION 1.2) (ont::SA_TELL 1)(w::CP 2) (w::VP 2) 
 					 (w::punc .5)
-					 (ONT::speech-act 2) ;; this occurs if we have an sequence of speech acts
+					 ;(ONT::speech-act 2) ;; this occurs if we have an sequence of speech acts
+					 (ONT::speech-act 1.2) ;; this occurs if we have an sequence of speech acts
 					 )))
 	))
 
