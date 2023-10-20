@@ -13,6 +13,15 @@ my $debug = 0;
 
 my $ambiguity_threshold = 0.2; # If both male and female freqs are above 20% of the total, consider the name ambiguous
 
+# assign scores 0-1 logarithmically between these two total frequency values
+# (clamp it outside)
+# note that this puts 10,000 at score 0.5, so that if there's another sense,
+# the name is likely to win above 10k, and lose below 10k, agreeing with
+# decisions we previously made about the stoplist
+my $min_score_freq = 1000;
+my $max_score_freq = 100000;
+my $score_denominator = log($max_score_freq / $min_score_freq);
+
 # less-common personal names that are also names of other things, or just words
 # that often occur at the beginning of a sentence and get capitalized
 # see also PlaceNames.pm
@@ -114,9 +123,16 @@ sub tag_personal_names {
     } elsif ($female_prop < $ambiguity_threshold) {
       $lftype = 'MALE-PERSON';
     }
+    my $score = log($total_freq / $min_score_freq) / $score_denominator;
+    if ($score < 0) {
+      $score = 0;
+    } elsif ($score > 1) {
+      $score = 1;
+    }
     push @terms, { type => "named-entity",
                    lftype => [$lftype],
 		   'penn-pos' => ['NNP'],
+		   score => $score,
 		   lex => $lex,
 		   start => $start,
 		   end => $end
