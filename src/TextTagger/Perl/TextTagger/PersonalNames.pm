@@ -36,6 +36,8 @@ my @stoplist = (
   # Fall isn't attested
   # Summer and Autumn have frequency >10,000 as names
   qw(Spring Fall Winter),
+  # planets (Venus is close, but still not quite frequency >10k as a name)
+  qw(Mercury Venus Earth Mars Jupiter Saturn Uranus Neptune Pluto),
   # personal pronouns
   # Again, I'm being thorough, using this table:
   # https://en.wikipedia.org/wiki/English_personal_pronouns#Basic
